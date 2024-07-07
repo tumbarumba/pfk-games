@@ -67,12 +67,17 @@ class Ball:
         self.canvas_width = self.canvas.winfo_width()
         self.hit_bottom = False
 
-    def hit_paddle(self, pos) -> bool:
+    def hit_paddle(self, ball_pos: list[float]) -> bool:
         paddle_pos = self.canvas.coords(self.paddle.id)
-        if pos[2] >= paddle_pos[0] and pos[0] <= paddle_pos[2]:
-            if paddle_pos[1] <= pos[3] <= paddle_pos[3]:
-                return True
-        return False
+        return Ball.is_aligned_horizontally(ball_pos, paddle_pos) and Ball.is_aligned_vertically(ball_pos, paddle_pos)
+
+    @staticmethod
+    def is_aligned_horizontally(ball_pos: list[float], paddle_pos: list[float]) -> bool:
+        return ball_pos[2] >= paddle_pos[0] and ball_pos[0] <= paddle_pos[2]
+
+    @staticmethod
+    def is_aligned_vertically(ball_pos: list[float], paddle_pos: list[float]) -> bool:
+        return paddle_pos[1] <= ball_pos[3] <= paddle_pos[3]
 
     def draw(self) -> None:
         self.canvas.move(self.id, self.x, self.y)
@@ -90,41 +95,47 @@ class Ball:
             self.x = -3
 
 
-window_closed = False
+class Bounce:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Bounce")
+        self.root.resizable(False, False)
+        self.root.wm_attributes("-topmost", 1)
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
+        self.canvas = tk.Canvas(self.root, width=500, height=400, bd=0, highlightthickness=0)
+        self.canvas.pack()
+        self.root.update()
 
-def on_close() -> None:
-    global window_closed
-    window_closed = True
+        self.score = Score(self.canvas, "green")
+        self.paddle = Paddle(self.canvas, "blue")
+        self.ball = Ball(self.canvas, self.score, self.paddle, "red")
+        self.window_closed = False
+
+    def on_close(self) -> None:
+        self.window_closed = True
+
+    def update_game(self):
+        if not self.ball.hit_bottom:
+            self.ball.draw()
+            self.paddle.draw()
+            self.score.draw()
+        self.root.update_idletasks()
+        self.root.update()
+
+    def mainloop(self):
+        while 1:
+            if self.window_closed:
+                break
+            self.update_game()
+            time.sleep(0.01)
+
+        self.root.destroy()
 
 
 def main() -> None:
-    root = tk.Tk()
-    root.title("Bounce")
-    root.resizable(False, False)
-    root.wm_attributes("-topmost", 1)
-    root.protocol("WM_DELETE_WINDOW", on_close)
-    canvas = tk.Canvas(root, width=500, height=400, bd=0, highlightthickness=0)
-    canvas.pack()
-    root.update()
-
-    score = Score(canvas, "green")
-    paddle = Paddle(canvas, "blue")
-    ball = Ball(canvas, score, paddle, "red")
-
-    while 1:
-        if window_closed:
-            break
-
-        if not ball.hit_bottom:
-            ball.draw()
-            paddle.draw()
-            score.draw()
-        root.update_idletasks()
-        root.update()
-        time.sleep(0.01)
-
-    root.destroy()
+    game = Bounce()
+    game.mainloop()
     print("Game Over")
 
 
