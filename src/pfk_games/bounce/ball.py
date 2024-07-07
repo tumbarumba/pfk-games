@@ -17,21 +17,21 @@ class Ball:
         self.canvas_height = self.canvas.winfo_height()
         self.canvas_width = self.canvas.winfo_width()
         self.hit_bottom = False
-        self.x = 0
-        self.y = 0
+        self.dx = 0
+        self.dy = 0
         self.reset()
 
     def reset(self) -> None:
         self.canvas.moveto(self.id, START_X, START_Y)
-        self.x = 0
-        self.y = 0
+        self.dx = 0
+        self.dy = 0
         self.hit_bottom = False
 
     def start(self) -> None:
         starts = [-3, -2, -1, 1, 2, 3]
         random.shuffle(starts)
-        self.x = starts[0]
-        self.y = -3
+        self.dx = starts[0]
+        self.dy = -3
 
     def hit_paddle(self, ball_pos: list[float]) -> bool:
         paddle_pos = self.canvas.coords(self.paddle.id)
@@ -45,17 +45,17 @@ class Ball:
     def is_aligned_vertically(ball_pos: list[float], paddle_pos: list[float]) -> bool:
         return paddle_pos[1] <= ball_pos[3] <= paddle_pos[3]
 
-    def draw(self) -> None:
-        self.canvas.move(self.id, self.x, self.y)
+    def tick(self) -> None:
+        self.canvas.move(self.id, self.dx, self.dy)
         pos = self.canvas.coords(self.id)
         if pos[1] <= 0:
-            self.y = 3
+            self.dy = 3
         if pos[3] >= self.canvas_height:
             self.hit_bottom = True
         if self.hit_paddle(pos):
-            self.y = -3
+            self.dy = -3
             self.score.increment()
         if pos[0] <= 0:
-            self.x = 3
+            self.dx = 3
         if pos[2] >= self.canvas_width:
-            self.x = -3
+            self.dx = -3

@@ -6,6 +6,8 @@ from pfk_games.bounce.paddle import Paddle
 from pfk_games.bounce.message import Message
 from pfk_games.bounce.score import Score
 
+TICK_DURATION = 0.01
+
 
 class Bounce:
     def __init__(self):
@@ -63,23 +65,23 @@ class Bounce:
         if self.started and not self.game_over:
             self.paddle.turn_right()
 
-    def update_game(self):
+    def tick(self):
         if self.ball.hit_bottom:
             if not self.game_over:
                 self.message.update("Game Over\nPress <space> to reset")
                 self.game_over = True
         else:
-            self.ball.draw()
-            self.paddle.draw()
-            self.score.draw()
+            self.ball.tick()
+            self.paddle.tick()
+            self.score.tick()
         self.root.update_idletasks()
         self.root.update()
 
     def mainloop(self):
-        while 1:
+        while True:
             if self.window_closed:
                 break
-            self.update_game()
-            time.sleep(0.01)
+            self.tick()
+            time.sleep(TICK_DURATION)
 
         self.root.destroy()

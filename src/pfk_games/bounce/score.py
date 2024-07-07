@@ -30,5 +30,5 @@ class Score:
         self.canvas.delete(self.id)
         self.id = self.create_text()
 
-    def draw(self) -> None:
+    def tick(self) -> None:
         pass
