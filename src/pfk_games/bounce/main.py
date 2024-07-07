@@ -21,10 +21,10 @@ class Paddle:
         elif pos[2] >= self.canvas_width:
             self.x = 0
 
-    def turn_left(self, evt) -> None:
+    def turn_left(self, _) -> None:
         self.x = -2
 
-    def turn_right(self, evt) -> None:
+    def turn_right(self, _) -> None:
         self.x = 2
 
 
