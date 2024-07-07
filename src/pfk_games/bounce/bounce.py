@@ -21,6 +21,8 @@ class Bounce:
         self.root.update()
 
         self.canvas.bind_all("<space>", self.on_space)
+        self.canvas.bind_all("<KeyPress-Left>", self.on_left)
+        self.canvas.bind_all("<KeyPress-Right>", self.on_right)
 
         self.message = Message(self.canvas, "black", "")
         self.score = None
@@ -62,6 +64,14 @@ class Bounce:
             self.reset_game()
         elif not self.started:
             self.start_game()
+
+    def on_left(self, _) -> None:
+        if self.started and not self.game_over:
+            self.paddle.turn_left()
+
+    def on_right(self, _) -> None:
+        if self.started and not self.game_over:
+            self.paddle.turn_right()
 
     def update_game(self):
         if self.ball.hit_bottom:
