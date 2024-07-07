@@ -1,10 +1,33 @@
-from tkinter import *
 import random
 import time
+import tkinter as tk
+
+
+class Score:
+    def __init__(self, canvas: tk.Canvas, color: str) -> None:
+        self.canvas = canvas
+        self.color = color
+        self.score = 0
+        self.id = self.make_score(color)
+
+    def make_score(self, color):
+        return self.canvas.create_text(
+            self.canvas.winfo_width() - 55, 10,
+            text=f"Score: {self.score:>3}",
+            font=("monospace", 12),
+            justify="right",
+            fill=color)
+
+    def draw(self) -> None:
+        self.canvas.delete(self.id)
+        self.id = self.make_score(self.color)
+
+    def add(self):
+        self.score += 1
 
 
 class Paddle:
-    def __init__(self, canvas: Canvas, color: str) -> None:
+    def __init__(self, canvas: tk.Canvas, color: str) -> None:
         self.canvas = canvas
         self.id = canvas.create_rectangle(0, 0, 100, 10, fill=color)
         self.canvas.move(self.id, 200, 300)
@@ -29,8 +52,9 @@ class Paddle:
 
 
 class Ball:
-    def __init__(self, canvas: Canvas, paddle: Paddle, color: str) -> None:
+    def __init__(self, canvas: tk.Canvas, score: Score, paddle: Paddle, color: str) -> None:
         self.canvas = canvas
+        self.score = score
         self.paddle = paddle
         self.id = canvas.create_oval(10, 10, 25, 25, fill=color)
         self.canvas.move(self.id, 245, 100)
@@ -58,6 +82,7 @@ class Ball:
             self.hit_bottom = True
         if self.hit_paddle(pos):
             self.y = -3
+            self.score.add()
         if pos[0] <= 0:
             self.x = 3
         if pos[2] >= self.canvas_width:
@@ -65,23 +90,25 @@ class Ball:
 
 
 def main() -> None:
-    tk = Tk()
-    tk.title("Game")
-    tk.resizable(False, False)
-    tk.wm_attributes("-topmost", 1)
-    canvas = Canvas(tk, width=500, height=400, bd=0, highlightthickness=0)
+    root = tk.Tk()
+    root.title("Bounce")
+    root.resizable(False, False)
+    root.wm_attributes("-topmost", 1)
+    canvas = tk.Canvas(root, width=500, height=400, bd=0, highlightthickness=0)
     canvas.pack()
-    tk.update()
+    root.update()
 
+    score = Score(canvas, "green")
     paddle = Paddle(canvas, "blue")
-    ball = Ball(canvas, paddle, "red")
+    ball = Ball(canvas, score, paddle, "red")
 
     while 1:
         if not ball.hit_bottom:
             ball.draw()
             paddle.draw()
-        tk.update_idletasks()
-        tk.update()
+            score.draw()
+        root.update_idletasks()
+        root.update()
         time.sleep(0.01)
 
 
