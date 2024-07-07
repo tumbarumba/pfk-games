@@ -4,6 +4,9 @@ import tkinter as tk
 from pfk_games.bounce.paddle import Paddle
 from pfk_games.bounce.score import Score
 
+START_X = 245
+START_Y = 284
+
 
 class Ball:
     def __init__(self, canvas: tk.Canvas, score: Score, paddle: Paddle, color: str) -> None:
@@ -11,13 +14,17 @@ class Ball:
         self.score = score
         self.paddle = paddle
         self.id = canvas.create_oval(10, 10, 25, 25, fill=color)
-        self.canvas.move(self.id, 245, 273)
-        starts = [-3, -2, -1, 1, 2, 3]
-        random.shuffle(starts)
-        self.x = 0
-        self.y = 0
         self.canvas_height = self.canvas.winfo_height()
         self.canvas_width = self.canvas.winfo_width()
+        self.hit_bottom = False
+        self.x = 0
+        self.y = 0
+        self.reset()
+
+    def reset(self) -> None:
+        self.canvas.moveto(self.id, START_X, START_Y)
+        self.x = 0
+        self.y = 0
         self.hit_bottom = False
 
     def start(self) -> None:

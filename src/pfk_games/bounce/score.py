@@ -6,19 +6,29 @@ class Score:
         self.canvas = canvas
         self.color = color
         self.score = 0
-        self.id = self.make_score(color)
+        self.high_score = 0
+        self.id = self.create_text()
 
-    def make_score(self, color):
+    def create_text(self):
         return self.canvas.create_text(
-            self.canvas.winfo_width() - 55, 10,
-            text=f"Score: {self.score:>3}",
+            self.canvas.winfo_width() - 55, 20,
+            text=f"Score: {self.score:>3}\nHigh: {self.high_score:>3}",
             font=("monospace", 12),
             justify="right",
-            fill=color)
+            fill=self.color)
 
-    def draw(self) -> None:
+    def reset(self) -> None:
+        self.score = 0
         self.canvas.delete(self.id)
-        self.id = self.make_score(self.color)
+        self.id = self.create_text()
 
     def increment(self):
         self.score += 1
+        if self.score > self.high_score:
+            self.high_score = self.score
+
+        self.canvas.delete(self.id)
+        self.id = self.create_text()
+
+    def draw(self) -> None:
+        pass

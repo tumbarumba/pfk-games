@@ -25,9 +25,9 @@ class Bounce:
         self.canvas.bind_all("<KeyPress-Right>", self.on_right)
 
         self.message = Message(self.canvas, "black", "")
-        self.score = None
-        self.paddle = None
-        self.ball = None
+        self.score = Score(self.canvas, "green")
+        self.paddle = Paddle(self.canvas, "blue")
+        self.ball = Ball(self.canvas, self.score, self.paddle, "red")
         self.started = False
         self.game_over = False
 
@@ -38,19 +38,9 @@ class Bounce:
 
     def reset_game(self):
         self.message.update("Press <space> to start")
-
-        if self.score:
-            self.canvas.delete(self.score.id)
-        self.score = Score(self.canvas, "green")
-
-        if self.paddle:
-            self.canvas.delete(self.paddle.id)
-        self.paddle = Paddle(self.canvas, "blue")
-
-        if self.ball:
-            self.canvas.delete(self.ball.id)
-        self.ball = Ball(self.canvas, self.score, self.paddle, "red")
-
+        self.score.reset()
+        self.paddle.reset()
+        self.ball.reset()
         self.started = False
         self.game_over = False
 
