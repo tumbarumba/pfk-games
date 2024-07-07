@@ -17,4 +17,7 @@ test = [
 ]
 
 [project.scripts]
-pfk-bounce = "pfk_games.bounce.main"
+pfk-bounce = "pfk_games.bounce.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pfk_games"]

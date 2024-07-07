@@ -1,4 +1,5 @@
 import random
+import sys
 import time
 import tkinter as tk
 
@@ -89,11 +90,20 @@ class Ball:
             self.x = -3
 
 
+window_closed = False
+
+
+def on_close() -> None:
+    global window_closed
+    window_closed = True
+
+
 def main() -> None:
     root = tk.Tk()
     root.title("Bounce")
     root.resizable(False, False)
     root.wm_attributes("-topmost", 1)
+    root.protocol("WM_DELETE_WINDOW", on_close)
     canvas = tk.Canvas(root, width=500, height=400, bd=0, highlightthickness=0)
     canvas.pack()
     root.update()
@@ -103,6 +113,9 @@ def main() -> None:
     ball = Ball(canvas, score, paddle, "red")
 
     while 1:
+        if window_closed:
+            break
+
         if not ball.hit_bottom:
             ball.draw()
             paddle.draw()
@@ -110,6 +123,9 @@ def main() -> None:
         root.update_idletasks()
         root.update()
         time.sleep(0.01)
+
+    root.destroy()
+    print("Game Over")
 
 
 if __name__ == "__main__":
