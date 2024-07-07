@@ -11,14 +11,26 @@ class Ball:
         self.score = score
         self.paddle = paddle
         self.id = canvas.create_oval(10, 10, 25, 25, fill=color)
-        self.canvas.move(self.id, 245, 100)
+        self.canvas.move(self.id, 245, 273)
+        starts = [-3, -2, -1, 1, 2, 3]
+        random.shuffle(starts)
+        self.x = 0
+        self.y = 0
+        self.canvas_height = self.canvas.winfo_height()
+        self.canvas_width = self.canvas.winfo_width()
+        self.canvas.bind_all("<space>", self.start)
+        self.started = False
+        self.hit_bottom = False
+
+    def start(self, _) -> None:
+        if self.started:
+            return
+
         starts = [-3, -2, -1, 1, 2, 3]
         random.shuffle(starts)
         self.x = starts[0]
         self.y = -3
-        self.canvas_height = self.canvas.winfo_height()
-        self.canvas_width = self.canvas.winfo_width()
-        self.hit_bottom = False
+        self.started = True
 
     def hit_paddle(self, ball_pos: list[float]) -> bool:
         paddle_pos = self.canvas.coords(self.paddle.id)
