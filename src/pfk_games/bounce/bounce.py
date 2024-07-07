@@ -3,6 +3,7 @@ import tkinter as tk
 
 from pfk_games.bounce.ball import Ball
 from pfk_games.bounce.paddle import Paddle
+from pfk_games.bounce.message import Message
 from pfk_games.bounce.score import Score
 
 
@@ -21,29 +22,20 @@ class Bounce:
 
         self.canvas.bind_all("<space>", self.on_space)
 
-        self.message_id = None
+        self.message = Message(self.canvas, "black", "")
         self.score = None
         self.paddle = None
         self.ball = None
         self.started = False
+        self.game_over = False
 
         self.reset_game()
 
     def on_close(self) -> None:
         self.window_closed = True
 
-    def draw_message(self, message):
-        return self.canvas.create_text(
-            250, 350,
-            text=message,
-            font=("monospace", 12),
-            justify="center",
-            fill="black")
-
     def reset_game(self):
-        if self.message_id:
-            self.canvas.delete(self.message_id)
-        self.message_id = self.draw_message("Press <space> to start")
+        self.message.update("Press <space> to start")
 
         if self.score:
             self.canvas.delete(self.score.id)
@@ -58,23 +50,24 @@ class Bounce:
         self.ball = Ball(self.canvas, self.score, self.paddle, "red")
 
         self.started = False
+        self.game_over = False
 
     def start_game(self):
         self.ball.start()
         self.started = True
-        self.canvas.delete(self.message_id)
-        self.message_id = None
+        self.message.update("")
 
     def on_space(self, _) -> None:
-        if self.ball.hit_bottom:
+        if self.game_over:
             self.reset_game()
         elif not self.started:
             self.start_game()
 
     def update_game(self):
         if self.ball.hit_bottom:
-            if not self.message_id:
-                self.message_id = self.draw_message("Game Over\nPress <space> to reset")
+            if not self.game_over:
+                self.message.update("Game Over\nPress <space> to reset")
+                self.game_over = True
         else:
             self.ball.draw()
             self.paddle.draw()
