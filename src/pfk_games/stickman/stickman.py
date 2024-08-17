@@ -6,7 +6,7 @@ TICK_DURATION = 0.01
 
 
 class StickMan:
-    def __init__(self):
+    def __init__(self) -> None:
         self.root = tk.Tk()
         self.root.title("Mr. Stick Man Races for the Exit")
         self.root.resizable(False, False)
