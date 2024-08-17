@@ -2,7 +2,7 @@ import time
 import tkinter as tk
 
 from pfk_games.stickman.images import image_path
-from pfk_games.stickman.sprite import PlatformSprite
+from pfk_games.stickman.sprite import PlatformSprite, StickFigureSprite, Sprite
 
 TICK_DURATION = 0.01
 
@@ -23,11 +23,12 @@ class StickMan:
         self.canvas_width = 500
 
         self.bg = tk.PhotoImage(file=image_path("background.png"))
-        self.sprites = []
+        self.sprites: list[Sprite] = []
         self.running = True
 
         self._add_background()
         self._add_platforms()
+        self.sprites.append(StickFigureSprite(self.canvas))
 
 
     def _add_background(self) -> None:
@@ -39,20 +40,20 @@ class StickMan:
 
     def _add_platforms(self) -> None:
         p1 = tk.PhotoImage(file=image_path("platform1.png"))
-        self.sprites.append(PlatformSprite(self, p1, 0, 480))
-        self.sprites.append(PlatformSprite(self, p1, 150, 440))
-        self.sprites.append(PlatformSprite(self, p1, 300, 400))
-        self.sprites.append(PlatformSprite(self, p1, 300, 160))
+        self.sprites.append(PlatformSprite(self.canvas, p1, 0, 480))
+        self.sprites.append(PlatformSprite(self.canvas, p1, 150, 440))
+        self.sprites.append(PlatformSprite(self.canvas, p1, 300, 400))
+        self.sprites.append(PlatformSprite(self.canvas, p1, 300, 160))
 
         p2 = tk.PhotoImage(file=image_path("platform2.png"))
-        self.sprites.append(PlatformSprite(self, p2, 175, 350))
-        self.sprites.append(PlatformSprite(self, p2, 50, 300))
-        self.sprites.append(PlatformSprite(self, p2, 170, 120))
-        self.sprites.append(PlatformSprite(self, p2, 45, 60))
+        self.sprites.append(PlatformSprite(self.canvas, p2, 175, 350))
+        self.sprites.append(PlatformSprite(self.canvas, p2, 50, 300))
+        self.sprites.append(PlatformSprite(self.canvas, p2, 170, 120))
+        self.sprites.append(PlatformSprite(self.canvas, p2, 45, 60))
 
         p3 = tk.PhotoImage(file=image_path("platform3.png"))
-        self.sprites.append(PlatformSprite(self, p3, 170, 250))
-        self.sprites.append(PlatformSprite(self, p3, 230, 200))
+        self.sprites.append(PlatformSprite(self.canvas, p3, 170, 250))
+        self.sprites.append(PlatformSprite(self.canvas, p3, 230, 200))
 
     def on_close(self) -> None:
         self.window_closed = True
