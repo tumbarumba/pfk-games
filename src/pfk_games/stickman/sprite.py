@@ -69,20 +69,7 @@ class StickFigureSprite(Sprite):
         self._jump_count = 0
         self._last_time = time.time()
 
-    def turn_left(self) -> None:
-        if self._dy == 0:
-            self._dx = -2
-
-    def turn_right(self) -> None:
-        if self._dy == 0:
-            self._dx = 2
-
-    def jump(self) -> None:
-        if self._dy == 0:
-            self._dy = -4
-            self._jump_count = 0
-
-    def animate(self) -> None:
+    def _animate(self) -> None:
         self._cycle_current_image()
         self._canvas.itemconfig(self._canvas_image, image=self._current_image)
 
@@ -111,8 +98,21 @@ class StickFigureSprite(Sprite):
                 return self._images_right[self._current_index]
         return self._images_left[0]
 
+    def turn_left(self) -> None:
+        if self._dy == 0:
+            self._dx = -2
+
+    def turn_right(self) -> None:
+        if self._dy == 0:
+            self._dx = 2
+
+    def jump(self) -> None:
+        if self._dy == 0:
+            self._dy = -4
+            self._jump_count = 0
+
     def tick(self) -> None:
-        self.animate()
+        self._animate()
         if self._dy < 0:
             self._jump_count += 1
             if self._jump_count > 20:
@@ -169,6 +169,7 @@ class StickFigureSprite(Sprite):
 
         self._canvas.move(self._canvas_image, self._dx, self._dy)
         self._coordinates.move(self._dx, self._dy)
+
 
 class DoorSprite(Sprite):
     def __init__(self,
