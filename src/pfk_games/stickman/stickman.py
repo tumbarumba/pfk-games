@@ -2,7 +2,7 @@ import time
 import tkinter as tk
 
 from pfk_games.stickman.images import image_path
-from pfk_games.stickman.sprite import PlatformSprite, StickFigureSprite, Sprite
+from pfk_games.stickman.sprite import PlatformSprite, StickFigureSprite, Sprite, DoorSprite
 
 TICK_DURATION = 0.01
 
@@ -28,6 +28,9 @@ class StickMan:
 
         self._add_background()
         self._add_platforms()
+
+        door = tk.PhotoImage(file=image_path("door1.png"))
+        self._sprites.append(DoorSprite(self._canvas, door, 45, 30, 40, 35))
 
         self._stick_man = StickFigureSprite(self._canvas, self._sprites)
         self._sprites.append(self._stick_man)
@@ -79,6 +82,8 @@ class StickMan:
         if self._running:
             for sprite in self._sprites:
                 sprite.tick()
+            if self._stick_man.endgame:
+                self._running = False
         self._root.update_idletasks()
         self._root.update()
 

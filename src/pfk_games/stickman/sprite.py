@@ -16,8 +16,13 @@ class Sprite:
     def tick(self) -> None:
         pass
 
+    @property
     def coords(self) -> Coords:
         return self._coordinates
+
+    @property
+    def endgame(self) -> bool:
+        return self._endgame
 
 
 class PlatformSprite(Sprite):
@@ -114,7 +119,7 @@ class StickFigureSprite(Sprite):
                 self._dy = 4
         if self._dy > 0:
             self._jump_count -= 1
-        co = self.coords()
+        co = self.coords
         left = True
         right = True
         top = True
@@ -135,7 +140,7 @@ class StickFigureSprite(Sprite):
         for sprite in self._sprites:
             if sprite == self:
                 continue
-            sprite_co = sprite.coords()
+            sprite_co = sprite.coords
             if top and self._dy < 0 and co.collided_top(sprite_co):
                 self._dy = -self._dy
                 top = False
@@ -152,11 +157,33 @@ class StickFigureSprite(Sprite):
             if left and self._dx < 0 and co.collided_left(sprite_co):
                 self._dx = 0
                 left = False
+                if sprite.endgame:
+                    self._endgame = True
             if right and self._dx > 0 and co.collided_right(sprite_co):
                 self._dx = 0
                 right = False
+                if sprite.endgame:
+                    self._endgame = True
             if falling and bottom and self._dy == 0 and co.bottom < self._canvas_height:
                 self._dy = 4
 
         self._canvas.move(self._canvas_image, self._dx, self._dy)
         self._coordinates.move(self._dx, self._dy)
+
+class DoorSprite(Sprite):
+    def __init__(self,
+                 canvas: tk.Canvas,
+                 source_image: tk.PhotoImage,
+                 x: int, y: int,
+                 width: int = 0, height: int = 0):
+        super().__init__(canvas)
+
+        if width == 0:
+            width = source_image.width()
+        if height == 0:
+            height = source_image.height()
+
+        self._source_image = source_image
+        self._canvas_image = canvas.create_image(x, y, image=source_image, anchor="nw")
+        self._coordinates = Coords(Point(x, y), Point(x + int(width / 2), y + int(height / 2)))
+        self._endgame = True
