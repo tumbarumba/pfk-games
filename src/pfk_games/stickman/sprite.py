@@ -57,8 +57,9 @@ class StickFigureSprite(Sprite):
         self._canvas_image = canvas.create_image(top_left.x, top_left.y, image=self._images_left[0], anchor="nw")
         self._dx = -2
         self._dy = 0
-        self._current_image = 0
-        self._current_image_add = 1
+        self._current_index = 0
+        self._current_image = self._images_left[0]
+        self._index_delta = 1
         self._jump_count = 0
         self._last_time = time.time()
 
@@ -75,7 +76,37 @@ class StickFigureSprite(Sprite):
             self._dy = -4
             self._jump_count = 0
 
+    def animate(self) -> None:
+        self._cycle_current_image()
+        self._canvas.itemconfig(self._canvas_image, image=self._current_image)
+
+    def _cycle_current_image(self):
+        if self._dx != 0 and self._dy == 0:
+            now = time.time()
+            if now - self._last_time > 0.1:
+                self._last_time = now
+                self._current_index += self._index_delta
+                if self._current_index >= 2:
+                    self._index_delta = -1
+                if self._current_index <= 0:
+                    self._index_delta = 1
+        self._current_image = self._get_current_image()
+
+    def _get_current_image(self) -> tk.PhotoImage:
+        if self._dx < 0:
+            if self._dy != 0:
+                return self._images_left[2]
+            else:
+                return self._images_left[self._current_index]
+        elif self._dx > 0:
+            if self._dy != 0:
+                return self._images_right[2]
+            else:
+                return self._images_right[self._current_index]
+        return self._images_left[0]
+
     def tick(self) -> None:
+        self.animate()
         if self._dx < 0 and self.coords().left <= 0:
             self._dx = 0
         if self._dy < 0 and self.coords().top <= 0:
