@@ -28,8 +28,9 @@ class StickMan:
 
         self._add_background()
         self._add_platforms()
-        self._sprites.append(StickFigureSprite(self._canvas))
 
+        self._stick_man = StickFigureSprite(self._canvas)
+        self._sprites.append(self._stick_man)
 
     def _add_background(self) -> None:
         w = self._bg_image.width()
@@ -58,14 +59,14 @@ class StickMan:
     def on_close(self) -> None:
         self.window_closed = True
 
-    def tick(self):
+    def tick(self) -> None:
         if self._running:
             for sprite in self._sprites:
-                sprite.move()
+                sprite.tick()
         self._root.update_idletasks()
         self._root.update()
 
-    def mainloop(self):
+    def mainloop(self) -> None:
         while True:
             if self.window_closed:
                 break

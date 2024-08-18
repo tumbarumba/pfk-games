@@ -11,7 +11,7 @@ class Sprite:
         self._endgame = False
         self._coordinates: Coords | None = None
 
-    def move(self):
+    def tick(self):
         pass
 
     def coords(self):
