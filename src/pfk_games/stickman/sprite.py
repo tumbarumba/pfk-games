@@ -1,21 +1,21 @@
 import time
 import tkinter as tk
 
-from pfk_games.stickman.coords import Coords
+from pfk_games.stickman.coords import Coords, Point
 from pfk_games.stickman.images import image_path
 
 
 class Sprite:
     def __init__(self, canvas: tk.Canvas) -> None:
-        self.canvas = canvas
-        self.endgame = False
-        self.coordinates = None
+        self._canvas = canvas
+        self._endgame = False
+        self._coordinates: Coords | None = None
 
     def move(self):
         pass
 
     def coords(self):
-        return self.coordinates
+        return self._coordinates
 
 
 class PlatformSprite(Sprite):
@@ -31,28 +31,28 @@ class PlatformSprite(Sprite):
         if height == 0:
             height = source_image.height()
 
-        self.source_image = source_image
-        self.image = canvas.create_image(x, y, image=source_image, anchor="nw")
-        self.coordinates = Coords(x, y, x + width, y + height)
+        self._source_image = source_image
+        self._canvas_image = canvas.create_image(x, y, image=source_image, anchor="nw")
+        self._coordinates = Coords(Point(x, y), Point(x + width, y + height))
 
 class StickFigureSprite(Sprite):
     def __init__(self, canvas: tk.Canvas) -> None:
         super().__init__(canvas)
-        self.images_left = [
+        self._images_left = [
             tk.PhotoImage(file=image_path("figure-l1.png")),
             tk.PhotoImage(file=image_path("figure-l2.png")),
             tk.PhotoImage(file=image_path("figure-l3.png"))
         ]
-        self.images_right = [
+        self._images_right = [
             tk.PhotoImage(file=image_path("figure-r1.png")),
             tk.PhotoImage(file=image_path("figure-r2.png")),
             tk.PhotoImage(file=image_path("figure-r3.png"))
         ]
-        self.image = canvas.create_image(200, 470, image=self.images_left[0], anchor="nw")
-        self.x = -2
-        self.y = 0
-        self.current_image = 0
-        self.current_image_add = 1
-        self.jump_count = 0
-        self.last_time = time.time()
-        self.coordinates = Coords()
+        self._canvas_image = canvas.create_image(200, 470, image=self._images_left[0], anchor="nw")
+        self._x = -2
+        self._y = 0
+        self._current_image = 0
+        self._current_image_add = 1
+        self._jump_count = 0
+        self._last_time = time.time()
+        self._coordinates = None

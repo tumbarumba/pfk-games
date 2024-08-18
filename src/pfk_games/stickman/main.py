@@ -1,8 +1,3 @@
-import tkinter as tk
-from platform import platform
-
-from pfk_games.stickman.images import image_path
-from pfk_games.stickman.sprite import PlatformSprite
 from pfk_games.stickman.stickman import StickMan
 
 
