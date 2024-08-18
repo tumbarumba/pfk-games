@@ -174,17 +174,27 @@ class StickFigureSprite(Sprite):
 class DoorSprite(Sprite):
     def __init__(self,
                  canvas: tk.Canvas,
-                 source_image: tk.PhotoImage,
                  x: int, y: int,
                  width: int = 0, height: int = 0):
         super().__init__(canvas)
 
-        if width == 0:
-            width = source_image.width()
-        if height == 0:
-            height = source_image.height()
+        self._closed_door = tk.PhotoImage(file=image_path("door1.png"))
+        self._open_door = tk.PhotoImage(file=image_path("door2.png"))
 
-        self._source_image = source_image
-        self._canvas_image = canvas.create_image(x, y, image=source_image, anchor="nw")
+        if width == 0:
+            width = self._closed_door.width()
+        if height == 0:
+            height = self._closed_door.height()
+
+        self._canvas_image = canvas.create_image(x, y, image=self._closed_door, anchor="nw")
         self._coordinates = Coords(Point(x, y), Point(x + int(width / 2), y + int(height / 2)))
+        self._is_open = False
         self._endgame = True
+
+    def tick(self) -> None:
+        pass
+
+    def open(self):
+        self._is_open = True
+        self._canvas.itemconfig(self._canvas_image, image=self._open_door)
+        

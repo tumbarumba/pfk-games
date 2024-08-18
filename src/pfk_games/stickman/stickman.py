@@ -27,7 +27,10 @@ class StickMan:
 
         self._bg_image = tk.PhotoImage(file=image_path("background.png"))
         self._add_background()
-        self._stick_man = self._add_sprites()
+
+        self._door = DoorSprite(self._canvas, 45, 30, 40, 35)
+        self._stick_man = StickFigureSprite(self._canvas, self._sprites)
+        self._add_sprites()
 
         self._bind_keys()
 
@@ -38,7 +41,7 @@ class StickMan:
             for y in range(0, 5):
                 self._canvas.create_image(x * w, y * h, image=self._bg_image, anchor="nw")
 
-    def _add_sprites(self) -> StickFigureSprite:
+    def _add_sprites(self) -> None:
         p1 = tk.PhotoImage(file=image_path("platform1.png"))
         self._sprites.append(PlatformSprite(self._canvas, p1, 0, 480))
         self._sprites.append(PlatformSprite(self._canvas, p1, 150, 440))
@@ -55,13 +58,8 @@ class StickMan:
         self._sprites.append(PlatformSprite(self._canvas, p3, 170, 250))
         self._sprites.append(PlatformSprite(self._canvas, p3, 230, 200))
 
-        door = tk.PhotoImage(file=image_path("door1.png"))
-        self._sprites.append(DoorSprite(self._canvas, door, 45, 30, 40, 35))
-
-        stick_man = StickFigureSprite(self._canvas, self._sprites)
-        self._sprites.append(stick_man)
-
-        return stick_man
+        self._sprites.append(self._door)
+        self._sprites.append(self._stick_man)
 
     def _bind_keys(self) -> None:
         self._canvas.bind_all("<KeyPress-Left>", self.on_left)
@@ -86,6 +84,7 @@ class StickMan:
                 sprite.tick()
             if self._stick_man.endgame:
                 self._running = False
+                self._door.open()
         self._root.update_idletasks()
         self._root.update()
 
