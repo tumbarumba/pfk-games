@@ -21,19 +21,13 @@ class StickMan:
         self._root.update()
         self._canvas_height = 500
         self._canvas_width = 500
-
-        self._bg_image = tk.PhotoImage(file=image_path("background.png"))
-        self._sprites: list[Sprite] = []
         self._running = True
 
+        self._sprites: list[Sprite] = []
+
+        self._bg_image = tk.PhotoImage(file=image_path("background.png"))
         self._add_background()
-        self._add_platforms()
-
-        door = tk.PhotoImage(file=image_path("door1.png"))
-        self._sprites.append(DoorSprite(self._canvas, door, 45, 30, 40, 35))
-
-        self._stick_man = StickFigureSprite(self._canvas, self._sprites)
-        self._sprites.append(self._stick_man)
+        self._stick_man = self._add_sprites()
 
         self._bind_keys()
 
@@ -44,7 +38,7 @@ class StickMan:
             for y in range(0, 5):
                 self._canvas.create_image(x * w, y * h, image=self._bg_image, anchor="nw")
 
-    def _add_platforms(self) -> None:
+    def _add_sprites(self) -> StickFigureSprite:
         p1 = tk.PhotoImage(file=image_path("platform1.png"))
         self._sprites.append(PlatformSprite(self._canvas, p1, 0, 480))
         self._sprites.append(PlatformSprite(self._canvas, p1, 150, 440))
@@ -60,6 +54,14 @@ class StickMan:
         p3 = tk.PhotoImage(file=image_path("platform3.png"))
         self._sprites.append(PlatformSprite(self._canvas, p3, 170, 250))
         self._sprites.append(PlatformSprite(self._canvas, p3, 230, 200))
+
+        door = tk.PhotoImage(file=image_path("door1.png"))
+        self._sprites.append(DoorSprite(self._canvas, door, 45, 30, 40, 35))
+
+        stick_man = StickFigureSprite(self._canvas, self._sprites)
+        self._sprites.append(stick_man)
+
+        return stick_man
 
     def _bind_keys(self) -> None:
         self._canvas.bind_all("<KeyPress-Left>", self.on_left)
