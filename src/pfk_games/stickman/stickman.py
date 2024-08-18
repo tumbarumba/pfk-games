@@ -29,7 +29,7 @@ class StickMan:
         self._add_background()
         self._add_platforms()
 
-        self._stick_man = StickFigureSprite(self._canvas)
+        self._stick_man = StickFigureSprite(self._canvas, self._sprites)
         self._sprites.append(self._stick_man)
 
         self._bind_keys()

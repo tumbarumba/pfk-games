@@ -39,8 +39,9 @@ class PlatformSprite(Sprite):
 
 
 class StickFigureSprite(Sprite):
-    def __init__(self, canvas: tk.Canvas) -> None:
+    def __init__(self, canvas: tk.Canvas, sprites: list[Sprite]) -> None:
         super().__init__(canvas)
+        self._sprites = sprites
         self._images_left = [
             tk.PhotoImage(file=image_path("figure-l1.png")),
             tk.PhotoImage(file=image_path("figure-l2.png")),
@@ -107,14 +108,55 @@ class StickFigureSprite(Sprite):
 
     def tick(self) -> None:
         self.animate()
-        if self._dx < 0 and self.coords().left <= 0:
-            self._dx = 0
-        if self._dy < 0 and self.coords().top <= 0:
-            self._dy = -self._dy
-        if self._dx > 0 and self.coords().right >= self._canvas_width:
-            self._dx = 0
-        if self._dy > 0 and self.coords().bottom >= self._canvas_height:
+        if self._dy < 0:
+            self._jump_count += 1
+            if self._jump_count > 20:
+                self._dy = 4
+        if self._dy > 0:
+            self._jump_count -= 1
+        co = self.coords()
+        left = True
+        right = True
+        top = True
+        bottom = True
+        falling = True
+        if self._dy > 0 and co.bottom > self._canvas_height:
             self._dy = 0
+            bottom = False
+        elif self._dy < 0 and co.top <= 0:
+            self._dy = 0
+            top = False
+        if self._dx > 0 and co.right >= self._canvas_width:
+            self._dx = 0
+            right = False
+        elif self._dx < 0 and co.left <= 0:
+            self._dx = 0
+            left = False
+        for sprite in self._sprites:
+            if sprite == self:
+                continue
+            sprite_co = sprite.coords()
+            if top and self._dy < 0 and co.collided_top(sprite_co):
+                self._dy = -self._dy
+                top = False
+            if bottom and self._dy > 0 and co.collided_bottom(sprite_co, self._dy):
+                self._dy = sprite_co.top - co.bottom
+                if self._dy < 0:
+                    self._dy = 0
+                bottom = False
+                top = False
+            if (bottom and falling and self._dy == 0 and
+                    co.bottom < self._canvas_height and
+                    co.collided_bottom(sprite_co, 1)):
+                falling = False
+            if left and self._dx < 0 and co.collided_left(sprite_co):
+                self._dx = 0
+                left = False
+            if right and self._dx > 0 and co.collided_right(sprite_co):
+                self._dx = 0
+                right = False
+            if falling and bottom and self._dy == 0 and co.bottom < self._canvas_height:
+                self._dy = 4
 
         self._canvas.move(self._canvas_image, self._dx, self._dy)
         self._coordinates.move(self._dx, self._dy)
