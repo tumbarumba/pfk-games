@@ -32,6 +32,8 @@ class StickMan:
         self._stick_man = StickFigureSprite(self._canvas)
         self._sprites.append(self._stick_man)
 
+        self._bind_keys()
+
     def _add_background(self) -> None:
         w = self._bg_image.width()
         h = self._bg_image.height()
@@ -55,6 +57,20 @@ class StickMan:
         p3 = tk.PhotoImage(file=image_path("platform3.png"))
         self._sprites.append(PlatformSprite(self._canvas, p3, 170, 250))
         self._sprites.append(PlatformSprite(self._canvas, p3, 230, 200))
+
+    def _bind_keys(self) -> None:
+        self._canvas.bind_all("<KeyPress-Left>", self.on_left)
+        self._canvas.bind_all("<KeyPress-Right>", self.on_right)
+        self._canvas.bind_all("<space>", self.on_space)
+
+    def on_left(self, _):
+        self._stick_man.turn_left()
+
+    def on_right(self, _):
+        self._stick_man.turn_right()
+
+    def on_space(self, _):
+        self._stick_man.jump()
 
     def on_close(self) -> None:
         self.window_closed = True

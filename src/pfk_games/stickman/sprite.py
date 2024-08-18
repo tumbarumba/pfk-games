@@ -11,10 +11,10 @@ class Sprite:
         self._endgame = False
         self._coordinates: Coords | None = None
 
-    def tick(self):
+    def tick(self) -> None:
         pass
 
-    def coords(self):
+    def coords(self) -> Coords | None:
         return self._coordinates
 
 
@@ -35,6 +35,7 @@ class PlatformSprite(Sprite):
         self._canvas_image = canvas.create_image(x, y, image=source_image, anchor="nw")
         self._coordinates = Coords(Point(x, y), Point(x + width, y + height))
 
+
 class StickFigureSprite(Sprite):
     def __init__(self, canvas: tk.Canvas) -> None:
         super().__init__(canvas)
@@ -49,10 +50,23 @@ class StickFigureSprite(Sprite):
             tk.PhotoImage(file=image_path("figure-r3.png"))
         ]
         self._canvas_image = canvas.create_image(200, 470, image=self._images_left[0], anchor="nw")
-        self._x = -2
-        self._y = 0
+        self._dx = -2
+        self._dy = 0
         self._current_image = 0
         self._current_image_add = 1
         self._jump_count = 0
         self._last_time = time.time()
         self._coordinates = None
+
+    def turn_left(self) -> None:
+        if self._dy == 0:
+            self._dx = -2
+
+    def turn_right(self) -> None:
+        if self._dy == 0:
+            self._dx = 2
+
+    def jump(self) -> None:
+        if self._dy == 0:
+            self._dy = -4
+            self._jump_count = 0
