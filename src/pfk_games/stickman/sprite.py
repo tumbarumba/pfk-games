@@ -120,51 +120,51 @@ class StickFigureSprite(Sprite):
         if self._dy > 0:
             self._jump_count -= 1
         co = self.coords
-        left = True
-        right = True
-        top = True
-        bottom = True
-        falling = True
+        hit_left = False
+        hit_right = False
+        hit_top = False
+        hit_bottom = False
+        is_falling = True
         if self._dy > 0 and co.bottom > self._canvas_height:
             self._dy = 0
-            bottom = False
+            hit_bottom = True
         elif self._dy < 0 and co.top <= 0:
             self._dy = 0
-            top = False
+            hit_top = True
         if self._dx > 0 and co.right >= self._canvas_width:
             self._dx = 0
-            right = False
+            hit_right = True
         elif self._dx < 0 and co.left <= 0:
             self._dx = 0
-            left = False
+            hit_left = True
         for sprite in self._sprites:
             if sprite == self:
                 continue
             sprite_co = sprite.coords
-            if top and self._dy < 0 and co.collided_top(sprite_co):
+            if not hit_top and self._dy < 0 and co.collided_top(sprite_co):
                 self._dy = -self._dy
-                top = False
-            if bottom and self._dy > 0 and co.collided_bottom(sprite_co, self._dy):
+                hit_top = True
+            if not hit_bottom and self._dy > 0 and co.collided_bottom(sprite_co, self._dy):
                 self._dy = sprite_co.top - co.bottom
                 if self._dy < 0:
                     self._dy = 0
-                bottom = False
-                top = False
-            if (bottom and falling and self._dy == 0 and
+                hit_bottom = True
+                hit_top = True
+            if (not hit_bottom and is_falling and self._dy == 0 and
                     co.bottom < self._canvas_height and
                     co.collided_bottom(sprite_co, 1)):
-                falling = False
-            if left and self._dx < 0 and co.collided_left(sprite_co):
+                is_falling = False
+            if not hit_left and self._dx < 0 and co.collided_left(sprite_co):
                 self._dx = 0
-                left = False
+                hit_left = True
                 if sprite.endgame:
                     self._endgame = True
-            if right and self._dx > 0 and co.collided_right(sprite_co):
+            if not hit_right and self._dx > 0 and co.collided_right(sprite_co):
                 self._dx = 0
-                right = False
+                hit_right = True
                 if sprite.endgame:
                     self._endgame = True
-            if falling and bottom and self._dy == 0 and co.bottom < self._canvas_height:
+            if is_falling and not hit_bottom and self._dy == 0 and co.bottom < self._canvas_height:
                 self._dy = 4
 
         self._canvas.move(self._canvas_image, self._dx, self._dy)
