@@ -8,13 +8,15 @@ from pfk_games.stickman.images import image_path
 class Sprite:
     def __init__(self, canvas: tk.Canvas) -> None:
         self._canvas = canvas
+        self._canvas_width: int = canvas.winfo_width()
+        self._canvas_height: int = canvas.winfo_height()
         self._endgame = False
-        self._coordinates: Coords | None = None
+        self._coordinates = Coords()
 
     def tick(self) -> None:
         pass
 
-    def coords(self) -> Coords | None:
+    def coords(self) -> Coords:
         return self._coordinates
 
 
@@ -49,14 +51,16 @@ class StickFigureSprite(Sprite):
             tk.PhotoImage(file=image_path("figure-r2.png")),
             tk.PhotoImage(file=image_path("figure-r3.png"))
         ]
-        self._canvas_image = canvas.create_image(200, 470, image=self._images_left[0], anchor="nw")
+        top_left = Point(200, 470)
+        bottom_right = Point(top_left.x + 27, top_left.y + 30)
+        self._coordinates = Coords(top_left, bottom_right)
+        self._canvas_image = canvas.create_image(top_left.x, top_left.y, image=self._images_left[0], anchor="nw")
         self._dx = -2
         self._dy = 0
         self._current_image = 0
         self._current_image_add = 1
         self._jump_count = 0
         self._last_time = time.time()
-        self._coordinates = None
 
     def turn_left(self) -> None:
         if self._dy == 0:
@@ -70,3 +74,16 @@ class StickFigureSprite(Sprite):
         if self._dy == 0:
             self._dy = -4
             self._jump_count = 0
+
+    def tick(self) -> None:
+        if self._dx < 0 and self.coords().left <= 0:
+            self._dx = 0
+        if self._dy < 0 and self.coords().top <= 0:
+            self._dy = -self._dy
+        if self._dx > 0 and self.coords().right >= self._canvas_width:
+            self._dx = 0
+        if self._dy > 0 and self.coords().bottom >= self._canvas_height:
+            self._dy = 0
+
+        self._canvas.move(self._canvas_image, self._dx, self._dy)
+        self._coordinates.move(self._dx, self._dy)

@@ -13,8 +13,14 @@ class Point:
     def y(self) -> int:
         return self._y
 
+    def move(self, dx: int, dy: int) -> Point:
+        self._x += dx
+        self._y += dy
+        return self
+
+
 class Coords:
-    def __init__(self, top_left: Point, bottom_right: Point) -> None:
+    def __init__(self, top_left: Point = Point(), bottom_right: Point = Point) -> None:
         self._top_left = top_left
         self._bottom_right = bottom_right
 
@@ -65,3 +71,7 @@ class Coords:
 
     def collided_bottom(self, other: Coords, y: int) -> bool:
         return self.within_x(other) and other.top <= (self.bottom + y) <= other.bottom
+
+    def move(self, dx, dy):
+        self._top_left.move(dx, dy)
+        self._bottom_right.move(dx, dy)
