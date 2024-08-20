@@ -6,6 +6,7 @@ These contains the (modified) code for [Jason Brigg's](https://jasonrbriggs.com/
 ![Python for Kids book cover](https://github.com/jasonrbriggs/python-for-kids/blob/main/cover.jpg)
 
 Original code from the book can be found at [https://github.com/jasonrbriggs/python-for-kids](https://github.com/jasonrbriggs/python-for-kids).
+This repository has some changes, and the code has been arranged into a module structure.
 
 To install, clone the repo, cd to the top level directory, and run:
 
