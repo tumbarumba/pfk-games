@@ -1,3 +1,4 @@
+from __future__ import annotations
 import time
 import tkinter as tk
 
@@ -41,7 +42,6 @@ class PlatformSprite(Sprite):
         self._source_image = source_image
         self._canvas_image = canvas.create_image(x, y, image=source_image, anchor="nw")
         self._coordinates = Coords(Point(x, y), Point(x + width, y + height))
-
 
 class StickFigureSprite(Sprite):
     def __init__(self, canvas: tk.Canvas, sprites: list[Sprite]) -> None:
@@ -113,62 +113,85 @@ class StickFigureSprite(Sprite):
 
     def tick(self) -> None:
         self._animate()
+        self._update_jump_state()
+        state = StickFigureSprite.TickState(self.coords, self)
+        for sprite in self._sprites:
+            state.check_collision_with(sprite)
+
+        self._canvas.move(self._canvas_image, self._dx, self._dy)
+        self._coordinates.move(self._dx, self._dy)
+
+    def _update_jump_state(self):
         if self._dy < 0:
             self._jump_count += 1
             if self._jump_count > 20:
                 self._dy = 4
         if self._dy > 0:
             self._jump_count -= 1
-        co = self.coords
-        hit_left = False
-        hit_right = False
-        hit_top = False
-        hit_bottom = False
-        is_falling = True
-        if self._dy > 0 and co.bottom > self._canvas_height:
-            self._dy = 0
-            hit_bottom = True
-        elif self._dy < 0 and co.top <= 0:
-            self._dy = 0
-            hit_top = True
-        if self._dx > 0 and co.right >= self._canvas_width:
-            self._dx = 0
-            hit_right = True
-        elif self._dx < 0 and co.left <= 0:
-            self._dx = 0
-            hit_left = True
-        for sprite in self._sprites:
-            if sprite == self:
-                continue
-            sprite_co = sprite.coords
-            if not hit_top and self._dy < 0 and co.collided_top(sprite_co):
-                self._dy = -self._dy
-                hit_top = True
-            if not hit_bottom and self._dy > 0 and co.collided_bottom(sprite_co, self._dy):
-                self._dy = sprite_co.top - co.bottom
-                if self._dy < 0:
-                    self._dy = 0
-                hit_bottom = True
-                hit_top = True
-            if (not hit_bottom and is_falling and self._dy == 0 and
-                    co.bottom < self._canvas_height and
-                    co.collided_bottom(sprite_co, 1)):
-                is_falling = False
-            if not hit_left and self._dx < 0 and co.collided_left(sprite_co):
-                self._dx = 0
-                hit_left = True
-                if sprite.endgame:
-                    self._endgame = True
-            if not hit_right and self._dx > 0 and co.collided_right(sprite_co):
-                self._dx = 0
-                hit_right = True
-                if sprite.endgame:
-                    self._endgame = True
-            if is_falling and not hit_bottom and self._dy == 0 and co.bottom < self._canvas_height:
-                self._dy = 4
 
-        self._canvas.move(self._canvas_image, self._dx, self._dy)
-        self._coordinates.move(self._dx, self._dy)
+    class TickState:
+        def __init__(self, coords: Coords, sm: StickFigureSprite) -> None:
+            self.co = coords
+            self.sm = sm
+            self.hit_left = self._check_hit_left(coords)
+            self.hit_right = self._check_hit_right(coords)
+            self.hit_top = self._check_hit_top(coords)
+            self.hit_bottom = self._check_hit_bottom(coords)
+            self.maybe_falling = True
+
+        def _check_hit_bottom(self, co: Coords) -> bool:
+            if self.sm._dy > 0 and co.bottom > self.sm._canvas_height:
+                self.sm._dy = 0
+                return True
+            return False
+
+        def _check_hit_top(self, co: Coords) -> bool:
+            if self.sm._dy < 0 and co.top <= 0:
+                self.sm._dy = 0
+                return True
+            return False
+
+        def _check_hit_left(self, co: Coords) -> bool:
+            if self.sm._dx < 0 and co.left <= 0:
+                self.sm._dx = 0
+                return True
+            return False
+
+        def _check_hit_right(self, co: Coords) -> bool:
+            if self.sm._dx > 0 and co.right >= self.sm._canvas_width:
+                self.sm._dx = 0
+                return True
+            return False
+
+        def check_collision_with(self, sprite: Sprite):
+            if sprite == self.sm:
+                return
+            sprite_co = sprite.coords
+            if not self.hit_top and self.sm._dy < 0 and self.co.collided_top(sprite_co):
+                self.sm._dy = -self.sm._dy
+                self.hit_top = True
+            if not self.hit_bottom and self.sm._dy > 0 and self.co.collided_bottom(sprite_co, self.sm._dy):
+                self.sm._dy = sprite_co.top - self.co.bottom
+                if self.sm._dy < 0:
+                    self.sm._dy = 0
+                self.hit_bottom = True
+                self.hit_top = True
+            if (not self.hit_bottom and self.maybe_falling and self.sm._dy == 0 and
+                    self.co.bottom < self.sm._canvas_height and
+                    self.co.collided_bottom(sprite_co, 1)):
+                self.maybe_falling = False
+            if not self.hit_left and self.sm._dx < 0 and self.co.collided_left(sprite_co):
+                self.sm._dx = 0
+                self.hit_left = True
+                if sprite.endgame:
+                    self.sm._endgame = True
+            if not self.hit_right and self.sm._dx > 0 and self.co.collided_right(sprite_co):
+                self.sm._dx = 0
+                self.hit_right = True
+                if sprite.endgame:
+                    self.sm._endgame = True
+            if self.maybe_falling and not self.hit_bottom and self.sm._dy == 0 and self.co.bottom < self.sm._canvas_height:
+                self.sm._dy = 4
 
 
 class DoorSprite(Sprite):
