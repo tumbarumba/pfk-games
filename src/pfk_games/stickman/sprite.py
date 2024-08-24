@@ -176,9 +176,7 @@ class StickFigureSprite(Sprite):
         if self._has_hit_top(sprite):
             self._dy = -self._dy
         if self._will_hit_bottom(sprite):
-            self._dy = sprite.coords.top - self.coords.bottom
-            if self._dy < 0:
-                self._dy = 0
+            self._dy = max(0, sprite.coords.top - self.coords.bottom)
         if (not on_platform and self._dy == 0 and
                 self.coords.bottom < self._canvas_height and
                 self.coords.collided_bottom(sprite.coords, 1)):
