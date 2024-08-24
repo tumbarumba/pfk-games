@@ -153,7 +153,7 @@ class StickFigureSprite(Sprite):
             self._check_right_edge(sm)
             self._check_top_edge(sm)
             self._check_bottom_edge(sm)
-            self.maybe_falling = True
+            self._on_platform = False
 
         def check_collision(self, sm: StickFigureSprite, sprite: Sprite):
             if sprite == sm:
@@ -164,10 +164,10 @@ class StickFigureSprite(Sprite):
                 sm._dy = sprite.coords.top - sm.coords.bottom
                 if sm._dy < 0:
                     sm._dy = 0
-            if (self.maybe_falling and sm._dy == 0 and
+            if (not self._on_platform and sm._dy == 0 and
                     sm.coords.bottom < sm._canvas_height and
                     sm.coords.collided_bottom(sprite.coords, 1)):
-                self.maybe_falling = False
+                self._on_platform = True
             if self._has_hit_left(sm, sprite):
                 sm._stop_horizontal()
                 if sprite.endgame:
@@ -176,7 +176,7 @@ class StickFigureSprite(Sprite):
                 sm._stop_horizontal()
                 if sprite.endgame:
                     sm._endgame = True
-            if self.maybe_falling and sm._dy == 0 and sm.coords.bottom < sm._canvas_height:
+            if not self._on_platform and sm._dy == 0 and sm.coords.bottom < sm._canvas_height:
                 sm._dy = 4
 
         def _check_bottom_edge(self, sm: StickFigureSprite) -> None:
