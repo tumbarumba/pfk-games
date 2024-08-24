@@ -114,9 +114,10 @@ class StickFigureSprite(Sprite):
     def tick(self) -> None:
         self._animate()
         self._update_jump_state()
+        on_platform = False
         state = StickFigureSprite.TickState(self)
         for sprite in self._sprites:
-            state.check_collision(self, sprite)
+            on_platform = state.check_collision(self, sprite, on_platform)
 
         self._canvas.move(self._canvas_image, self._dx, self._dy)
         self._coordinates.move(self._dx, self._dy)
@@ -153,21 +154,20 @@ class StickFigureSprite(Sprite):
             self._check_right_edge(sm)
             self._check_top_edge(sm)
             self._check_bottom_edge(sm)
-            self._on_platform = False
 
-        def check_collision(self, sm: StickFigureSprite, sprite: Sprite):
+        def check_collision(self, sm: StickFigureSprite, sprite: Sprite, on_platform: bool) -> bool:
             if sprite == sm:
-                return
+                return on_platform
             if self._has_hit_top(sm, sprite):
                 sm._dy = -sm._dy
             if self._will_hit_bottom(sm, sprite):
                 sm._dy = sprite.coords.top - sm.coords.bottom
                 if sm._dy < 0:
                     sm._dy = 0
-            if (not self._on_platform and sm._dy == 0 and
+            if (not on_platform and sm._dy == 0 and
                     sm.coords.bottom < sm._canvas_height and
                     sm.coords.collided_bottom(sprite.coords, 1)):
-                self._on_platform = True
+                on_platform = True
             if self._has_hit_left(sm, sprite):
                 sm._stop_horizontal()
                 if sprite.endgame:
@@ -176,8 +176,9 @@ class StickFigureSprite(Sprite):
                 sm._stop_horizontal()
                 if sprite.endgame:
                     sm._endgame = True
-            if not self._on_platform and sm._dy == 0 and sm.coords.bottom < sm._canvas_height:
+            if not on_platform and sm._dy == 0 and sm.coords.bottom < sm._canvas_height:
                 sm._dy = 4
+            return on_platform
 
         def _check_bottom_edge(self, sm: StickFigureSprite) -> None:
             if sm._moving_down() and sm.coords.bottom >= sm._canvas_height:
