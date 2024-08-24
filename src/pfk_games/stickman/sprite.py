@@ -143,7 +143,7 @@ class StickFigureSprite(Sprite):
             if sprite == self.sm:
                 return
             sprite_co = sprite.coords
-            if not self.hit_top and self._will_hit_top(sprite_co):
+            if not self.hit_top and self._has_hit_top(sprite_co):
                 self.sm._dy = -self.sm._dy
                 self.hit_top = True
             if not self.hit_bottom and self._will_hit_bottom(sprite_co):
@@ -151,17 +151,16 @@ class StickFigureSprite(Sprite):
                 if self.sm._dy < 0:
                     self.sm._dy = 0
                 self.hit_bottom = True
-                self.hit_top = True
             if (not self.hit_bottom and self.maybe_falling and self.sm._dy == 0 and
                     self.co.bottom < self.sm._canvas_height and
                     self.co.collided_bottom(sprite_co, 1)):
                 self.maybe_falling = False
-            if not self.hit_left and self._will_hit_left(sprite_co):
+            if not self.hit_left and self._has_hit_left(sprite_co):
                 self.sm._dx = 0
                 self.hit_left = True
                 if sprite.endgame:
                     self.sm._endgame = True
-            if not self.hit_right and self._will_hit_right(sprite_co):
+            if not self.hit_right and self._has_hit_right(sprite_co):
                 self.sm._dx = 0
                 self.hit_right = True
                 if sprite.endgame:
@@ -193,13 +192,13 @@ class StickFigureSprite(Sprite):
                 return True
             return False
 
-        def _will_hit_right(self, sprite_co: Coords) -> bool:
+        def _has_hit_right(self, sprite_co: Coords) -> bool:
             return self.sm._dx > 0 and self.co.collided_right(sprite_co)
 
-        def _will_hit_left(self, sprite_co: Coords) -> bool:
+        def _has_hit_left(self, sprite_co: Coords) -> bool:
             return self.sm._dx < 0 and self.co.collided_left(sprite_co)
 
-        def _will_hit_top(self, sprite_co: Coords) -> bool:
+        def _has_hit_top(self, sprite_co: Coords) -> bool:
             return self.sm._dy < 0 and self.co.collided_top(sprite_co)
 
         def _will_hit_bottom(self, sprite_co: Coords) -> bool:
