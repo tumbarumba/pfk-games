@@ -61,7 +61,7 @@ class StickFigureSprite(Sprite):
         bottom_right = Point(top_left.x + 27, top_left.y + 30)
         self._coordinates = Coords(top_left, bottom_right)
         self._canvas_image = canvas.create_image(top_left.x, top_left.y, image=self._images_left[0], anchor="nw")
-        self._dx = -2
+        self._dx = 0
         self._dy = 0
         self._current_index = 0
         self._current_image = self._images_left[0]
@@ -114,95 +114,98 @@ class StickFigureSprite(Sprite):
     def tick(self) -> None:
         self._animate()
         self._update_jump_state()
-        state = StickFigureSprite.TickState(self.coords, self)
+        state = StickFigureSprite.TickState(self)
         for sprite in self._sprites:
-            state.check_collision_with(sprite)
+            state.check_collision(self, sprite)
 
         self._canvas.move(self._canvas_image, self._dx, self._dy)
         self._coordinates.move(self._dx, self._dy)
 
+    def _moving_left(self) -> bool:
+        return self._dx < 0
+
+    def _moving_right(self):
+        return self._dx > 0
+
+    def _moving_up(self) -> bool:
+        return self._dy < 0
+
+    def _moving_down(self) -> bool:
+        return self._dy > 0
+
+    def _stop_horizontal(self) -> None:
+        self._dx = 0
+
+    def _stop_vertical(self) -> None:
+        self._dy = 0
+
     def _update_jump_state(self):
-        if self._dy < 0:
+        if self._moving_up():
             self._jump_count += 1
             if self._jump_count > 20:
                 self._dy = 4
-        if self._dy > 0:
+        if self._moving_down():
             self._jump_count -= 1
 
     class TickState:
-        def __init__(self, coords: Coords, sm: StickFigureSprite) -> None:
-            self.co = coords
-            self.sm = sm
-            self.hit_left = self._has_hit_left_canvas(coords)
-            self.hit_right = self._has_hit_right_canvas(coords)
-            self.hit_top = self._has_hit_top_canvas(coords)
-            self.hit_bottom = self._has_hit_bottom_canvas(coords)
+        def __init__(self, sm: StickFigureSprite) -> None:
+            self._check_left_edge(sm)
+            self._check_right_edge(sm)
+            self._check_top_edge(sm)
+            self._check_bottom_edge(sm)
             self.maybe_falling = True
 
-        def check_collision_with(self, sprite: Sprite):
-            if sprite == self.sm:
+        def check_collision(self, sm: StickFigureSprite, sprite: Sprite):
+            if sprite == sm:
                 return
-            sprite_co = sprite.coords
-            if not self.hit_top and self._has_hit_top(sprite_co):
-                self.sm._dy = -self.sm._dy
-                self.hit_top = True
-            if not self.hit_bottom and self._will_hit_bottom(sprite_co):
-                self.sm._dy = sprite_co.top - self.co.bottom
-                if self.sm._dy < 0:
-                    self.sm._dy = 0
-                self.hit_bottom = True
-            if (not self.hit_bottom and self.maybe_falling and self.sm._dy == 0 and
-                    self.co.bottom < self.sm._canvas_height and
-                    self.co.collided_bottom(sprite_co, 1)):
+            if self._has_hit_top(sm, sprite):
+                sm._dy = -sm._dy
+            if self._will_hit_bottom(sm, sprite):
+                sm._dy = sprite.coords.top - sm.coords.bottom
+                if sm._dy < 0:
+                    sm._dy = 0
+            if (self.maybe_falling and sm._dy == 0 and
+                    sm.coords.bottom < sm._canvas_height and
+                    sm.coords.collided_bottom(sprite.coords, 1)):
                 self.maybe_falling = False
-            if not self.hit_left and self._has_hit_left(sprite_co):
-                self.sm._dx = 0
-                self.hit_left = True
+            if self._has_hit_left(sm, sprite):
+                sm._stop_horizontal()
                 if sprite.endgame:
-                    self.sm._endgame = True
-            if not self.hit_right and self._has_hit_right(sprite_co):
-                self.sm._dx = 0
-                self.hit_right = True
+                    sm._endgame = True
+            if self._has_hit_right(sm, sprite):
+                sm._stop_horizontal()
                 if sprite.endgame:
-                    self.sm._endgame = True
-            if self.maybe_falling and not self.hit_bottom and self.sm._dy == 0 and self.co.bottom < self.sm._canvas_height:
-                self.sm._dy = 4
+                    sm._endgame = True
+            if self.maybe_falling and sm._dy == 0 and sm.coords.bottom < sm._canvas_height:
+                sm._dy = 4
 
-        def _has_hit_bottom_canvas(self, co: Coords) -> bool:
-            if self.sm._dy > 0 and co.bottom > self.sm._canvas_height:
-                self.sm._dy = 0
-                return True
-            return False
+        def _check_bottom_edge(self, sm: StickFigureSprite) -> None:
+            if sm._moving_down() and sm.coords.bottom >= sm._canvas_height:
+                sm._stop_vertical()
 
-        def _has_hit_top_canvas(self, co: Coords) -> bool:
-            if self.sm._dy < 0 and co.top <= 0:
-                self.sm._dy = 0
-                return True
-            return False
+        def _check_top_edge(self, sm: StickFigureSprite) -> None:
+            if sm._moving_up() and sm.coords.top <= 0:
+                sm._stop_vertical()
 
-        def _has_hit_left_canvas(self, co: Coords) -> bool:
-            if self.sm._dx < 0 and co.left <= 0:
-                self.sm._dx = 0
-                return True
-            return False
+        def _check_left_edge(self, sm: StickFigureSprite) -> None:
+            if sm._moving_left() and sm.coords.left <= 0:
+                sm._stop_horizontal()
 
-        def _has_hit_right_canvas(self, co: Coords) -> bool:
-            if self.sm._dx > 0 and co.right >= self.sm._canvas_width:
-                self.sm._dx = 0
-                return True
-            return False
+        def _check_right_edge(self, sm: StickFigureSprite) -> None:
+            if sm._moving_right() and sm.coords.right >= sm._canvas_width:
+                sm._stop_horizontal()
 
-        def _has_hit_right(self, sprite_co: Coords) -> bool:
-            return self.sm._dx > 0 and self.co.collided_right(sprite_co)
+        def _has_hit_right(self, sm: StickFigureSprite, sprite: Sprite) -> bool:
+            return sm._moving_right() and sm.coords.collided_right(sprite.coords)
 
-        def _has_hit_left(self, sprite_co: Coords) -> bool:
-            return self.sm._dx < 0 and self.co.collided_left(sprite_co)
+        def _has_hit_left(self, sm: StickFigureSprite, sprite: Sprite) -> bool:
+            return sm._moving_left() and sm.coords.collided_left(sprite.coords)
 
-        def _has_hit_top(self, sprite_co: Coords) -> bool:
-            return self.sm._dy < 0 and self.co.collided_top(sprite_co)
+        def _has_hit_top(self, sm: StickFigureSprite, sprite: Sprite) -> bool:
+            return sm._moving_up() and sm.coords.collided_top(sprite.coords)
 
-        def _will_hit_bottom(self, sprite_co: Coords) -> bool:
-            return self.sm._dy > 0 and self.co.collided_bottom(sprite_co, self.sm._dy)
+        def _will_hit_bottom(self, sm: StickFigureSprite, sprite: Sprite) -> bool:
+            return sm._moving_down() and sm.coords.collided_bottom(sprite.coords, sm._dy)
 
 
 class DoorSprite(Sprite):
