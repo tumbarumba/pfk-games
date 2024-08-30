@@ -15,8 +15,6 @@ class Point:
         return self._y
 
     def move(self, dx: int, dy: int) -> Point:
-        self._x += dx
-        self._y += dy
         return Point(self._x + dx, self._y + dy)
 
 
