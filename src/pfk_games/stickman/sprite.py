@@ -5,6 +5,8 @@ import tkinter as tk
 from pfk_games.stickman.hitbox import HitBox, Point
 from pfk_games.stickman.images import image_path
 
+TERMINAL_VELOCITY: int = 6
+
 
 class Sprite:
     def __init__(self, canvas: tk.Canvas, hitbox: HitBox = HitBox()) -> None:
@@ -71,18 +73,38 @@ class StickFigureSprite(Sprite):
         self._current_index = 0
         self._current_image = self._images_left[0]
         self._index_delta = 1
-        self._jump_count = 0
-        self._last_time = time.time()
+        self._jumping = False
+        self._animation_time = time.time()
+        self._gravity_time = time.time()
+
+    def turn_left(self) -> None:
+        if not self._jumping:
+            self._dx = -2
+
+    def turn_right(self) -> None:
+        if not self._jumping:
+            self._dx = 2
+
+    def jump(self) -> None:
+        if not self._jumping:
+            self._jumping = True
+            self._gravity_time = time.time()
+            self._dy = -5
+
+    def tick(self) -> None:
+        self._animate()
+        self._update_coordinates()
+        self._canvas.moveto(self._canvas_image, self.hitbox.top_left.x, self.hitbox.top_left.y)
 
     def _animate(self) -> None:
         self._cycle_current_image()
         self._canvas.itemconfig(self._canvas_image, image=self._current_image)
 
     def _cycle_current_image(self):
-        if self._dx != 0 and self._dy == 0:
+        if self._dx != 0 and not self._jumping:
             now = time.time()
-            if now - self._last_time > 0.1:
-                self._last_time = now
+            if now - self._animation_time > 0.1:
+                self._animation_time = now
                 self._current_index += self._index_delta
                 if self._current_index >= 2:
                     self._index_delta = -1
@@ -92,40 +114,31 @@ class StickFigureSprite(Sprite):
 
     def _get_current_image(self) -> tk.PhotoImage:
         if self._dx < 0:
-            if self._dy != 0:
+            if self._jumping:
                 return self._images_left[2]
             else:
                 return self._images_left[self._current_index]
         elif self._dx > 0:
-            if self._dy != 0:
+            if self._jumping:
                 return self._images_right[2]
             else:
                 return self._images_right[self._current_index]
         return self._images_left[0]
 
-    def turn_left(self) -> None:
-        if self._dy == 0:
-            self._dx = -2
-
-    def turn_right(self) -> None:
-        if self._dy == 0:
-            self._dx = 2
-
-    def jump(self) -> None:
-        if self._dy == 0:
-            self._dy = -4
-            self._jump_count = 0
-
-    def tick(self) -> None:
-        self._animate()
-        self._update_jump_state()
+    def _update_coordinates(self):
+        if self._jumping:
+            self._acceleration_due_to_gravity()
+        self._check_if_on_platform()
         self._keep_on_canvas()
-        on_platform = False
         for sprite in self._sprites:
-            on_platform = self._check_collision(sprite, on_platform)
-
+            self._check_collision(sprite)
         self._hitbox = self._hitbox.move(self._dx, self._dy)
-        self._canvas.moveto(self._canvas_image, self._hitbox.top_left.x, self._hitbox.top_left.y)
+
+    def _acceleration_due_to_gravity(self) -> None:
+        now = time.time()
+        if now - self._gravity_time > 0.05:
+            self._dy = min(TERMINAL_VELOCITY, self._dy + 1)
+            self._gravity_time = now
 
     def _moving_left(self) -> bool:
         return self._dx < 0
@@ -145,14 +158,6 @@ class StickFigureSprite(Sprite):
     def _stop_vertical(self) -> None:
         self._dy = 0
 
-    def _update_jump_state(self) -> None:
-        if self._moving_up():
-            self._jump_count += 1
-            if self._jump_count > 20:
-                self._dy = 4
-        if self._moving_down():
-            self._jump_count -= 1
-
     def _keep_on_canvas(self) -> None:
         self._check_left_edge()
         self._check_right_edge()
@@ -162,6 +167,7 @@ class StickFigureSprite(Sprite):
     def _check_bottom_edge(self) -> None:
         if self._moving_down() and self.hitbox.bottom >= self._canvas_height:
             self._stop_vertical()
+            self._jumping = False
 
     def _check_top_edge(self) -> None:
         if self._moving_up() and self.hitbox.top <= 0:
@@ -175,28 +181,21 @@ class StickFigureSprite(Sprite):
         if self._moving_right() and self.hitbox.right >= self._canvas_width:
             self._stop_horizontal()
 
-    def _check_collision(self, sprite: Sprite, on_platform: bool) -> bool:
-        if sprite == self:
-            return on_platform
-        if self._has_hit_top(sprite):
-            self._dy = -self._dy
-        if self._will_hit_bottom(sprite):
-            self._dy = max(0, sprite.hitbox.top - self.hitbox.bottom)
-        if (not on_platform and self._dy == 0 and
-                self.hitbox.bottom < self._canvas_height and
-                self.hitbox.collided_bottom(sprite.hitbox, 1)):
-            on_platform = True
-        if self._has_hit_left(sprite):
-            self._stop_horizontal()
-            if sprite.endgame:
-                self._endgame = True
-        if self._has_hit_right(sprite):
-            self._stop_horizontal()
-            if sprite.endgame:
-                self._endgame = True
-        if not on_platform and self._dy == 0 and self.hitbox.bottom < self._canvas_height:
-            self._dy = 4
-        return on_platform
+    def _check_if_on_platform(self) -> None:
+        if self.hitbox.bottom >= self._canvas_height:
+            # Bottom of screen
+            self._jumping = False
+            return
+
+        for sprite in self._sprites:
+            if isinstance(sprite, PlatformSprite):
+                if self.hitbox.collided_bottom(sprite.hitbox, 1):
+                    # We're on this platform
+                    self._jumping = False
+                    return
+
+        # No longer on platform, start falling
+        self._jumping = True
 
     def _has_hit_right(self, sprite: Sprite) -> bool:
         return self._moving_right() and self.hitbox.collided_right(sprite.hitbox)
@@ -209,6 +208,27 @@ class StickFigureSprite(Sprite):
 
     def _will_hit_bottom(self, sprite: Sprite) -> bool:
         return self._moving_down() and self.hitbox.collided_bottom(sprite.hitbox, self._dy)
+
+    def _check_collision(self, sprite: Sprite) -> None:
+        if sprite == self:
+            return
+        if self._will_hit_bottom(sprite):
+            self._dy = max(0, sprite.hitbox.top - self.hitbox.bottom)
+        elif (self._moving_down() and
+                self.hitbox.bottom < self._canvas_height and
+                self.hitbox.collided_bottom(sprite.hitbox, 1)):
+            self._jumping = False
+            self._stop_vertical()
+        if self._has_hit_top(sprite):
+            self._dy = -self._dy
+        elif self._has_hit_left(sprite):
+            self._stop_horizontal()
+            if sprite.endgame:
+                self._endgame = True
+        elif self._has_hit_right(sprite):
+            self._stop_horizontal()
+            if sprite.endgame:
+                self._endgame = True
 
 
 def _door_hitbox(x: int, y: int, width: int, height: int) -> HitBox:
