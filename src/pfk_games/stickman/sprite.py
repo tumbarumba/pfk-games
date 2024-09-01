@@ -231,17 +231,22 @@ class StickFigureSprite(Sprite):
     def _will_hit_bottom(self, sprite: Sprite) -> bool:
         return self._moving_down() and self.hitbox.collided_bottom(sprite.hitbox, self._dy)
 
+    def _has_hit_bottom(self, sprite: Sprite) -> bool:
+        return self._moving_down() and self.hitbox.collided_bottom(sprite.hitbox, 1)
+
     def _check_collision(self, sprite: Sprite) -> None:
         if sprite == self:
             return
+
+        # Falling onto platform
         if self._will_hit_bottom(sprite):
             self._dy = max(0, sprite.hitbox.top - self.hitbox.bottom)
-        elif (self._moving_down() and
-                self.hitbox.bottom < self._canvas_height and
-                self.hitbox.collided_bottom(sprite.hitbox, 1)):
+        elif self._has_hit_bottom(sprite):
             self._jumping = False
             self._stop_vertical()
+
         if self._has_hit_top(sprite):
+            # Bounce
             self._dy = -self._dy
         elif self._has_hit_left(sprite):
             self._stop_horizontal()
