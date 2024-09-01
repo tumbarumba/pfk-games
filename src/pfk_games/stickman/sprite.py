@@ -73,21 +73,21 @@ class ImageSequence:
         self._right_jump = right_jump
         self._index = 0
 
-    def first(self, dx) -> tk.PhotoImage:
-        if dx < 0:
+    def first(self, is_left: bool) -> tk.PhotoImage:
+        if is_left:
             return self._left_seq[0]
         else:
             return self._right_seq[0]
 
-    def next(self, dx) -> tk.PhotoImage:
+    def next(self, is_left: bool) -> tk.PhotoImage:
         self._index = (self._index + 1) % len(self._left_seq)
-        if dx < 0:
+        if is_left:
             return self._left_seq[self._index]
         else:
             return self._right_seq[self._index]
 
-    def jumping(self, dx) -> tk.PhotoImage:
-        if dx < 0:
+    def jumping(self, is_left: bool) -> tk.PhotoImage:
+        if is_left:
             return self._left_jump
         else:
             return self._right_jump
@@ -103,7 +103,7 @@ class StickFigureSprite(Sprite):
         super().__init__(canvas, StickFigureSprite._make_hitbox())
         self._sprites = sprites
         self._image_seq = ImageSequence.make_sequence()
-        self._current_image = self._image_seq.first(0)
+        self._current_image = self._image_seq.first(True)
         self._canvas_image = canvas.create_image(
             self.hitbox.top_left.x,
             self.hitbox.top_left.y,
@@ -128,7 +128,7 @@ class StickFigureSprite(Sprite):
             self._jumping = True
             self._gravity_time = time.time()
             self._dy = -5
-            self._current_image = self._image_seq.jumping(self._dx)
+            self._current_image = self._image_seq.jumping(self._moving_left())
 
     def tick(self) -> None:
         self._animate()
@@ -144,7 +144,7 @@ class StickFigureSprite(Sprite):
             now = time.time()
             if now - self._animation_time > 0.1:
                 self._animation_time = now
-                self._current_image = self._image_seq.next(self._dx)
+                self._current_image = self._image_seq.next(self._moving_left())
 
     def _update_coordinates(self):
         if self._jumping:
@@ -174,7 +174,7 @@ class StickFigureSprite(Sprite):
         return self._dy > 0
 
     def _stop_horizontal(self) -> None:
-        self._current_image = self._image_seq.first(self._dx)
+        self._current_image = self._image_seq.first(self._moving_left())
         self._dx = 0
 
     def _stop_vertical(self) -> None:
