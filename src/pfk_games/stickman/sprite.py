@@ -28,21 +28,21 @@ class Sprite:
         return self._endgame
 
 
-def _hitbox_from(image: tk.PhotoImage, x: int, y: int, width: int, height: int) -> HitBox:
-    if width == 0:
-        width = image.width()
-    if height == 0:
-        height = image.height()
-    return HitBox(Point(x, y), Point(x + width, y + height))
-
-
 class PlatformSprite(Sprite):
+    @classmethod
+    def _make_hitbox(cls, image: tk.PhotoImage, x: int, y: int, width: int, height: int) -> HitBox:
+        if width == 0:
+            width = image.width()
+        if height == 0:
+            height = image.height()
+        return HitBox(Point(x, y), Point(x + width, y + height))
+
     def __init__(self,
                  canvas: tk.Canvas,
                  source_image: tk.PhotoImage,
                  x: int, y: int,
                  width: int = 0, height: int = 0) -> None:
-        super().__init__(canvas, _hitbox_from(source_image, x, y, width, height))
+        super().__init__(canvas, PlatformSprite._make_hitbox(source_image, x, y, width, height))
         self._source_image = source_image
         self._canvas_image = canvas.create_image(x, y, image=source_image, anchor="nw")
 
@@ -51,33 +51,46 @@ class PlatformSprite(Sprite):
 
 class ImageSequence:
     @classmethod
-    def left_sequence(cls) -> ImageSequence:
-        image1 = tk.PhotoImage(file=image_path("figure-l1.png")),
-        image2 = tk.PhotoImage(file=image_path("figure-l2.png")),
-        image3 = tk.PhotoImage(file=image_path("figure-l3.png"))
-        return ImageSequence([image1, image2, image3, image2], jumping=image3)
+    def make_sequence(cls) -> ImageSequence:
+        l1 = tk.PhotoImage(file=image_path("figure-l1.png")),
+        l2 = tk.PhotoImage(file=image_path("figure-l2.png")),
+        l3 = tk.PhotoImage(file=image_path("figure-l3.png"))
+        left_seq = [l1, l2, l3, l2]
 
-    @classmethod
-    def right_sequence(cls) -> ImageSequence:
-        image1 = tk.PhotoImage(file=image_path("figure-r1.png")),
-        image2 = tk.PhotoImage(file=image_path("figure-r2.png")),
-        image3 = tk.PhotoImage(file=image_path("figure-r3.png"))
-        return ImageSequence([image1, image2, image3, image2], jumping=image3)
+        r1 = tk.PhotoImage(file=image_path("figure-r1.png")),
+        r2 = tk.PhotoImage(file=image_path("figure-r2.png")),
+        r3 = tk.PhotoImage(file=image_path("figure-r3.png"))
+        right_seq = [r1, r2, r3, r2]
 
-    def __init__(self, images: list[tk.PhotoImage], jumping: tk.PhotoImage) -> None:
-        self._images = images
+        return ImageSequence(left_seq, l3, right_seq, r3)
+
+    def __init__(self,
+                 left_seq: list[tk.PhotoImage], left_jump: tk.PhotoImage,
+                 right_seq: list[tk.PhotoImage], right_jump: tk.PhotoImage) -> None:
+        self._left_seq = left_seq
+        self._left_jump = left_jump
+        self._right_seq = right_seq
+        self._right_jump = right_jump
         self._index = 0
-        self._jumping = jumping
 
-    def first(self) -> tk.PhotoImage:
-        return self._images[0]
+    def first(self, dx) -> tk.PhotoImage:
+        if dx < 0:
+            return self._left_seq[0]
+        else:
+            return self._right_seq[0]
 
-    def next(self) -> tk.PhotoImage:
-        self._index = (self._index + 1) % len(self._images)
-        return self._images[self._index]
+    def next(self, dx) -> tk.PhotoImage:
+        self._index = (self._index + 1) % len(self._left_seq)
+        if dx < 0:
+            return self._left_seq[self._index]
+        else:
+            return self._right_seq[self._index]
 
-    def jumping(self) -> tk.PhotoImage:
-        return self._jumping
+    def jumping(self, dx) -> tk.PhotoImage:
+        if dx < 0:
+            return self._left_jump
+        else:
+            return self._right_jump
 
 class StickFigureSprite(Sprite):
     @classmethod
@@ -89,9 +102,8 @@ class StickFigureSprite(Sprite):
     def __init__(self, canvas: tk.Canvas, sprites: list[Sprite]) -> None:
         super().__init__(canvas, StickFigureSprite._make_hitbox())
         self._sprites = sprites
-        self._left_seq = ImageSequence.left_sequence()
-        self._right_seq = ImageSequence.right_sequence()
-        self._current_image = self._left_seq.first()
+        self._image_seq = ImageSequence.make_sequence()
+        self._current_image = self._image_seq.first(0)
         self._canvas_image = canvas.create_image(
             self.hitbox.top_left.x,
             self.hitbox.top_left.y,
@@ -99,7 +111,6 @@ class StickFigureSprite(Sprite):
             anchor="nw")
         self._dx = 0
         self._dy = 0
-        self._current_index = 0
         self._jumping = False
         self._animation_time = time.time()
         self._gravity_time = time.time()
@@ -117,10 +128,7 @@ class StickFigureSprite(Sprite):
             self._jumping = True
             self._gravity_time = time.time()
             self._dy = -5
-            if self._moving_left():
-                self._current_image = self._left_seq.jumping()
-            else:
-                self._current_image = self._right_seq.jumping()
+            self._current_image = self._image_seq.jumping(self._dx)
 
     def tick(self) -> None:
         self._animate()
@@ -136,10 +144,7 @@ class StickFigureSprite(Sprite):
             now = time.time()
             if now - self._animation_time > 0.1:
                 self._animation_time = now
-                if self._moving_left():
-                    self._current_image = self._left_seq.next()
-                else:
-                    self._current_image = self._right_seq.next()
+                self._current_image = self._image_seq.next(self._dx)
 
     def _update_coordinates(self):
         if self._jumping:
@@ -159,7 +164,7 @@ class StickFigureSprite(Sprite):
     def _moving_left(self) -> bool:
         return self._dx < 0
 
-    def _moving_right(self):
+    def _moving_right(self) -> bool:
         return self._dx > 0
 
     def _moving_up(self) -> bool:
@@ -169,10 +174,7 @@ class StickFigureSprite(Sprite):
         return self._dy > 0
 
     def _stop_horizontal(self) -> None:
-        if self._moving_left():
-            self._current_image = self._left_seq.first()
-        else:
-            self._current_image = self._right_seq.first()
+        self._current_image = self._image_seq.first(self._dx)
         self._dx = 0
 
     def _stop_vertical(self) -> None:
@@ -251,13 +253,13 @@ class StickFigureSprite(Sprite):
                 self._endgame = True
 
 
-def _door_hitbox(x: int, y: int, width: int, height: int) -> HitBox:
-    return HitBox(Point(x, y), Point(x + int(width / 2), y + int(height / 2)))
-
-
 class DoorSprite(Sprite):
+    @classmethod
+    def _make_hitbox(cls, x: int, y: int, width: int, height: int) -> HitBox:
+        return HitBox(Point(x, y), Point(x + int(width / 2), y + int(height / 2)))
+
     def __init__(self, canvas: tk.Canvas, x: int, y: int, width: int, height: int):
-        super().__init__(canvas, _door_hitbox(x, y, width, height))
+        super().__init__(canvas, DoorSprite._make_hitbox(x, y, width, height))
         self._closed_door = tk.PhotoImage(file=image_path("door1.png"))
         self._open_door = tk.PhotoImage(file=image_path("door2.png"))
         self._canvas_image = canvas.create_image(x, y, image=self._closed_door, anchor="nw")
