@@ -187,9 +187,12 @@ class StickFigureSprite(Sprite):
         self._check_bottom_edge()
 
     def _check_bottom_edge(self) -> None:
-        if self._moving_down() and self.hitbox.bottom >= self._canvas_height:
-            self._stop_vertical()
-            self._jumping = False
+        if self._moving_down():
+            if self.hitbox.bottom >= self._canvas_height:
+                self._stop_vertical()
+                self._jumping = False
+            elif self.hitbox.bottom + self._dy >= self._canvas_height:
+                self._dy = self._canvas_height - self.hitbox.bottom
 
     def _check_top_edge(self) -> None:
         if self._moving_up() and self.hitbox.top <= 0:
