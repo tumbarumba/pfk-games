@@ -222,19 +222,19 @@ class StickFigureSprite(Sprite):
         # No longer on platform, start falling
         self._jumping = True
 
-    def _has_hit_right(self, sprite: Sprite) -> bool:
+    def _right_has_hit(self, sprite: Sprite) -> bool:
         return self._moving_right() and self.hitbox.collided_right(sprite.hitbox)
 
-    def _has_hit_left(self, sprite: Sprite) -> bool:
+    def _left_has_hit(self, sprite: Sprite) -> bool:
         return self._moving_left() and self.hitbox.collided_left(sprite.hitbox)
 
-    def _has_hit_top(self, sprite: Sprite) -> bool:
+    def _top_has_hit(self, sprite: Sprite) -> bool:
         return self._moving_up() and self.hitbox.collided_top(sprite.hitbox)
 
-    def _will_hit_bottom(self, sprite: Sprite) -> bool:
+    def _bottom_will_hit(self, sprite: Sprite) -> bool:
         return self._moving_down() and self.hitbox.collided_bottom(sprite.hitbox, self._dy)
 
-    def _has_hit_bottom(self, sprite: Sprite) -> bool:
+    def _bottom_has_hit(self, sprite: Sprite) -> bool:
         return self._moving_down() and self.hitbox.collided_bottom(sprite.hitbox, 1)
 
     def _check_collision(self, sprite: Sprite) -> None:
@@ -242,20 +242,20 @@ class StickFigureSprite(Sprite):
             return
 
         # Falling onto platform
-        if self._will_hit_bottom(sprite):
+        if self._bottom_will_hit(sprite):
             self._dy = max(0, sprite.hitbox.top - self.hitbox.bottom)
-        elif self._has_hit_bottom(sprite):
+        elif self._bottom_has_hit(sprite):
             self._jumping = False
             self._stop_vertical()
 
-        if self._has_hit_top(sprite):
+        if self._top_has_hit(sprite):
             # Bounce
             self._dy = -self._dy
-        elif self._has_hit_left(sprite):
+        elif self._left_has_hit(sprite):
             self._stop_horizontal()
             if sprite.endgame:
                 self._endgame = True
-        elif self._has_hit_right(sprite):
+        elif self._right_has_hit(sprite):
             self._stop_horizontal()
             if sprite.endgame:
                 self._endgame = True
