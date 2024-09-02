@@ -47,29 +47,23 @@ class HitBox:
     def bottom(self) -> int:
         return self._bottom_right.y
 
-    def within_x(self, other: HitBox) -> bool:
-        return (other.left < self.left < other.right) or \
-               (other.left < self.right < other.right) or \
-               (self.left < other.left < self.right) or \
-               (self.left < other.right < self.right)
+    def intersect_x(self, other: HitBox) -> bool:
+        return self.left < other.right and other.left < self.right
 
-    def within_y(self, other: HitBox) -> bool:
-        return (other.top < self.top < other.bottom) or \
-               (other.top < self.bottom < other.bottom) or \
-               (self.top < other.top < self.bottom) or \
-               (self.top < other.bottom < self.bottom)
+    def intersect_y(self, other: HitBox) -> bool:
+        return self.top < other.bottom and other.top < self.bottom
 
     def collided_left(self, other: HitBox) -> bool:
-        return self.within_y(other) and other.left <= self.left <= other.right
+        return self.intersect_y(other) and other.left <= self.left <= other.right
 
     def collided_right(self, other: HitBox) -> bool:
-        return self.within_y(other) and other.left <= self.right <= other.right
+        return self.intersect_y(other) and other.left <= self.right <= other.right
 
     def collided_top(self, other: HitBox) -> bool:
-        return self.within_x(other) and other.top <= self.top <= other.bottom
+        return self.intersect_x(other) and other.top <= self.top <= other.bottom
 
     def collided_bottom(self, other: HitBox, y: int) -> bool:
-        return self.within_x(other) and other.top <= (self.bottom + y) <= other.bottom
+        return self.intersect_x(other) and other.top <= (self.bottom + y) <= other.bottom
 
     def move(self, dx, dy) -> HitBox:
         return HitBox(self.top_left.move(dx, dy), self.bottom_right.move(dx, dy))
