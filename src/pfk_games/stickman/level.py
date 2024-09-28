@@ -1,8 +1,9 @@
 import tkinter as tk
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 
 from pfk_games.stickman.images import image_path
 from pfk_games.stickman.sprite import Sprite, DoorSprite, StickFigureSprite, PlatformSprite
+
 
 class Level(ABC):
     @abstractmethod
@@ -61,7 +62,7 @@ class Level1(Level):
         return self._complete
 
     def _add_background(self) -> None:
-        self._bg_image = tk.PhotoImage(file=image_path("background.png"))
+        self._bg_image = tk.PhotoImage(file=image_path("background1.png"))
         w = self._bg_image.width()
         h = self._bg_image.height()
         for x in range(0, 5):

@@ -1,7 +1,7 @@
 import time
 import tkinter as tk
 
-from pfk_games.stickman.level import Level1
+from pfk_games.stickman.level import Level, Level1
 from pfk_games.stickman.message import Message
 
 TICK_DURATION = 0.01
@@ -23,7 +23,7 @@ class StickMan:
         self._canvas_width = 500
         self._running = True
 
-        self._level = Level1(self._canvas)
+        self._level: Level = Level1(self._canvas)
 
         self._message: Message | None = None
 
