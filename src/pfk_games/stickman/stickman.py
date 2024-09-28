@@ -25,8 +25,7 @@ class StickMan:
 
         self._level = Level1(self._canvas)
 
-        self._message = Message(self._canvas, "black")
-        self._showing_message = False
+        self._message: Message | None = None
 
         self._bind_keys()
 
@@ -36,15 +35,15 @@ class StickMan:
         self._canvas.bind_all("<space>", self.on_space)
 
     def on_left(self, _):
-        if not self._showing_message:
+        if not self._message:
             self._level.on_left()
 
     def on_right(self, _):
-        if not self._showing_message:
+        if not self._message:
             self._level.on_right()
 
     def on_space(self, _):
-        if self._showing_message:
+        if self._message:
             self.hide_message()
         else:
             self._level.on_space()
@@ -53,12 +52,11 @@ class StickMan:
         self.window_closed = True
 
     def show_message(self, message: str) -> None:
-        self._message.show(message)
-        self._showing_message = True
+        self._message = Message(self._canvas, "black", message)
 
     def hide_message(self) -> None:
-        self._message.hide()
-        self._showing_message = False
+        self._message.remove()
+        self._message = None
 
     def tick(self) -> None:
         if self._running:
