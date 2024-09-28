@@ -1,5 +1,4 @@
 import tkinter as tk
-from random import setstate
 
 
 class Message:
