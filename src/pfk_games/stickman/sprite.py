@@ -181,12 +181,12 @@ class StickFigureSprite(Sprite):
         self._dy = 0
 
     def _keep_on_canvas(self) -> None:
-        self._check_left_edge()
-        self._check_right_edge()
-        self._check_top_edge()
-        self._check_bottom_edge()
+        self._check_left_limit()
+        self._check_right_limit()
+        self._check_top_limit()
+        self._check_bottom_limit()
 
-    def _check_bottom_edge(self) -> None:
+    def _check_bottom_limit(self) -> None:
         if self._moving_down():
             if self.hitbox.bottom >= self._canvas_height:
                 self._stop_vertical()
@@ -194,15 +194,15 @@ class StickFigureSprite(Sprite):
             elif self.hitbox.bottom + self._dy >= self._canvas_height:
                 self._dy = self._canvas_height - self.hitbox.bottom
 
-    def _check_top_edge(self) -> None:
+    def _check_top_limit(self) -> None:
         if self._moving_up() and self.hitbox.top <= 0:
             self._stop_vertical()
 
-    def _check_left_edge(self) -> None:
+    def _check_left_limit(self) -> None:
         if self._moving_left() and self.hitbox.left <= 0:
             self._stop_horizontal()
 
-    def _check_right_edge(self) -> None:
+    def _check_right_limit(self) -> None:
         if self._moving_right() and self.hitbox.right >= self._canvas_width:
             self._stop_horizontal()
 
