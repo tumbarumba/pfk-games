@@ -1,7 +1,7 @@
 import time
 import tkinter as tk
 
-from pfk_games.stickman.level import Level, Level1
+from pfk_games.stickman.level import Level, Level1, Level2
 from pfk_games.stickman.message import Message
 
 TICK_DURATION = 0.01
@@ -22,6 +22,7 @@ class StickMan:
         self._canvas_height = 500
         self._canvas_width = 500
         self._running = True
+        self._level = 1
 
         self._level: Level = Level1(self._canvas)
 
@@ -43,7 +44,12 @@ class StickMan:
             self._level.on_right()
 
     def on_space(self, _):
-        if self._message:
+        if not self._running:
+            self._level = Level2(self._canvas)
+            self._running = True
+            self.hide_message()
+            self.show_message("Level 2\n\nPress <space> to start")
+        elif self._message:
             self.hide_message()
             self._level.on_left()
         else:
@@ -64,6 +70,7 @@ class StickMan:
             self._level.tick()
             if self._level.complete:
                 self._running = False
+                self.show_message("Level 1 complete\n\nPress <space> for next level")
         self._root.update_idletasks()
         self._root.update()
 
