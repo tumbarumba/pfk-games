@@ -2,6 +2,7 @@ import time
 import tkinter as tk
 
 from pfk_games.stickman.images import image_path
+from pfk_games.stickman.message import Message
 from pfk_games.stickman.sprite import PlatformSprite, StickFigureSprite, Sprite, DoorSprite
 
 TICK_DURATION = 0.01
@@ -31,6 +32,9 @@ class StickMan:
         self._door = DoorSprite(self._canvas, 45, 30, 40, 35)
         self._stick_man = StickFigureSprite(self._canvas, self._sprites)
         self._add_sprites()
+
+        self._message = Message(self._canvas, "black")
+        self._showing_message = False
 
         self._bind_keys()
 
@@ -67,16 +71,29 @@ class StickMan:
         self._canvas.bind_all("<space>", self.on_space)
 
     def on_left(self, _):
-        self._stick_man.turn_left()
+        if not self._showing_message:
+            self._stick_man.turn_left()
 
     def on_right(self, _):
-        self._stick_man.turn_right()
+        if not self._showing_message:
+            self._stick_man.turn_right()
 
     def on_space(self, _):
-        self._stick_man.jump()
+        if self._showing_message:
+            self.hide_message()
+        else:
+            self._stick_man.jump()
 
     def on_close(self) -> None:
         self.window_closed = True
+
+    def show_message(self, message: str) -> None:
+        self._message.show(message)
+        self._showing_message = True
+
+    def hide_message(self) -> None:
+        self._message.hide()
+        self._showing_message = False
 
     def tick(self) -> None:
         if self._running:
@@ -89,6 +106,7 @@ class StickMan:
         self._root.update()
 
     def mainloop(self) -> None:
+        self.show_message("Level 1\n\nPress <space> to start")
         while True:
             if self.window_closed:
                 break
