@@ -6,33 +6,10 @@ from pfk_games.stickman.sprite import Sprite, DoorSprite, StickFigureSprite, Pla
 
 
 class Level(ABC):
-    @abstractmethod
-    def on_left(self) -> None:
-        pass
-
-    @abstractmethod
-    def on_right(self) -> None:
-        pass
-
-    @abstractmethod
-    def on_space(self) -> None:
-        pass
-
-    @abstractmethod
-    def tick(self) -> None:
-        pass
-
-    @property
-    @abstractmethod
-    def complete(self) -> bool:
-        pass
-
-
-class Level1(Level):
     def __init__(self, canvas: tk.Canvas) -> None:
         self._canvas = canvas
 
-        self._add_background()
+        self._set_background()
 
         self._sprites: list[Sprite] = []
         self._door = DoorSprite(self._canvas, 45, 30, 40, 35)
@@ -53,15 +30,26 @@ class Level1(Level):
     def tick(self):
         for sprite in self._sprites:
             sprite.tick()
-        if self._stick_man.endgame:
+        if self._door.is_open:
             self._complete = True
-            self._door.open()
 
     @property
     def complete(self) -> bool:
         return self._complete
 
-    def _add_background(self) -> None:
+    @abstractmethod
+    def _set_background(self) -> None:
+        pass
+
+    @abstractmethod
+    def _make_sprites(self) -> list[Sprite]:
+        pass
+
+class Level1(Level):
+    def __init__(self, canvas: tk.Canvas) -> None:
+        super().__init__(canvas)
+
+    def _set_background(self) -> None:
         self._bg_image = tk.PhotoImage(file=image_path("background1.png"))
         w = self._bg_image.width()
         h = self._bg_image.height()
@@ -89,3 +77,11 @@ class Level1(Level):
         sprites.append(PlatformSprite(self._canvas, p3, 230, 200))
 
         return sprites
+
+
+class Level2(Level):
+    def _set_background(self) -> None:
+        pass
+
+    def _make_sprites(self) -> list[Sprite]:
+        pass

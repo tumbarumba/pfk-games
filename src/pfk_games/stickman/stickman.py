@@ -45,6 +45,7 @@ class StickMan:
     def on_space(self, _):
         if self._message:
             self.hide_message()
+            self._level.on_left()
         else:
             self._level.on_space()
 

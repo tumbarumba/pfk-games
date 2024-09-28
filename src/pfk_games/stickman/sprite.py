@@ -14,18 +14,16 @@ class Sprite:
         self._canvas_width: int = canvas.winfo_width()
         self._canvas_height: int = canvas.winfo_height()
         self._hitbox = hitbox
-        self._endgame = False
 
     def tick(self) -> None:
+        pass
+
+    def handle_collision(self) -> None:
         pass
 
     @property
     def hitbox(self) -> HitBox:
         return self._hitbox
-
-    @property
-    def endgame(self) -> bool:
-        return self._endgame
 
 
 class PlatformSprite(Sprite):
@@ -45,8 +43,6 @@ class PlatformSprite(Sprite):
         super().__init__(canvas, PlatformSprite._make_hitbox(source_image, x, y, width, height))
         self._source_image = source_image
         self._canvas_image = canvas.create_image(x, y, image=source_image, anchor="nw")
-
-
 
 
 class ImageSequence:
@@ -253,12 +249,10 @@ class StickFigureSprite(Sprite):
             self._dy = -self._dy
         elif self._left_has_hit(sprite):
             self._stop_horizontal()
-            if sprite.endgame:
-                self._endgame = True
+            sprite.handle_collision()
         elif self._right_has_hit(sprite):
             self._stop_horizontal()
-            if sprite.endgame:
-                self._endgame = True
+            sprite.handle_collision()
 
 
 class DoorSprite(Sprite):
@@ -272,12 +266,14 @@ class DoorSprite(Sprite):
         self._open_door = tk.PhotoImage(file=image_path("door2.png"))
         self._canvas_image = canvas.create_image(x, y, image=self._closed_door, anchor="nw")
         self._is_open = False
-        self._endgame = True
 
     def tick(self) -> None:
         pass
 
-    def open(self):
+    def handle_collision(self):
         self._is_open = True
         self._canvas.itemconfig(self._canvas_image, image=self._open_door)
-        
+
+    @property
+    def is_open(self) -> bool:
+        return self._is_open
