@@ -1,10 +1,14 @@
 import time
 import tkinter as tk
+from typing import Callable
 
 from pfk_games.stickman.level import Level, Level1, Level2
 from pfk_games.stickman.message import Message
 
 TICK_DURATION = 0.01
+
+
+level_builders: list[Callable[[tk.Canvas], Level]] = [Level1, Level2]
 
 
 class StickMan:
@@ -22,13 +26,15 @@ class StickMan:
         self._canvas_height = 500
         self._canvas_width = 500
         self._running = True
-        self._level = 1
 
-        self._level: Level = Level1(self._canvas)
+        self._level_index = -1
+        self._level: Level
 
         self._message: Message | None = None
 
         self._bind_keys()
+
+        self._start_next_level()
 
     def _bind_keys(self) -> None:
         self._canvas.bind_all("<KeyPress-Left>", self.on_left)
@@ -45,10 +51,11 @@ class StickMan:
 
     def on_space(self, _):
         if not self._running:
-            self._level = Level2(self._canvas)
-            self._running = True
             self.hide_message()
-            self.show_message("Level 2\n\nPress <space> to start")
+            if self._has_next_level():
+                self._start_next_level()
+            else:
+                self._end_game()
         elif self._message:
             self.hide_message()
             self._level.on_left()
@@ -59,6 +66,8 @@ class StickMan:
         self.window_closed = True
 
     def show_message(self, message: str) -> None:
+        if self._message:
+            self.hide_message()
         self._message = Message(self._canvas, "black", message)
 
     def hide_message(self) -> None:
@@ -70,7 +79,7 @@ class StickMan:
             self._level.tick()
             if self._level.complete:
                 self._running = False
-                self.show_message("Level 1 complete\n\nPress <space> for next level")
+                self.show_message(f"Level {self._level_index + 1} complete\n\nPress <space> for next level")
         self._root.update_idletasks()
         self._root.update()
 
@@ -83,3 +92,15 @@ class StickMan:
             time.sleep(TICK_DURATION)
 
         self._root.destroy()
+
+    def _has_next_level(self) -> bool:
+        return self._level_index < len(level_builders) - 1
+
+    def _start_next_level(self):
+        self._level_index += 1
+        self._level = level_builders[self._level_index](self._canvas)
+        self._running = True
+        self.show_message(f"Level {self._level_index + 1}\n\nPress <space> to start")
+
+    def _end_game(self):
+        self.show_message("Game Over")
