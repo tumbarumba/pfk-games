@@ -2,7 +2,10 @@ import tkinter as tk
 from abc import ABC, abstractmethod
 
 from pfk_games.stickman.images import image_path
-from pfk_games.stickman.sprite import Sprite, DoorSprite, StickFigureSprite, PlatformSprite
+from pfk_games.stickman.sprite import Sprite
+from pfk_games.stickman.sprite.door import DoorSprite
+from pfk_games.stickman.sprite.platform import PlatformSprite
+from pfk_games.stickman.sprite.stickman import StickManSprite
 
 
 class Level(ABC):
@@ -10,7 +13,7 @@ class Level(ABC):
         self._canvas = canvas
         self._bg_image = self._set_background(bg_path)
         self._sprites = self._make_sprites()
-        self._stick_man = StickFigureSprite(self._canvas, self._sprites)
+        self._stick_man = StickManSprite(self._canvas, self._sprites)
         self._door = self._make_door()
         self._sprites.extend([self._door, self._stick_man])
         self._complete = False

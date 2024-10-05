@@ -9,9 +9,10 @@ TICK_DURATION = 0.01
 
 
 level_builders: list[Callable[[tk.Canvas], Level]] = [Level1, Level2]
+# level_builders: list[Callable[[tk.Canvas], Level]] = [Level2]
 
 
-class StickMan:
+class StickManGame:
     def __init__(self) -> None:
         self._root = tk.Tk()
         self._root.title("Mr. Stick Man Races for the Exit")

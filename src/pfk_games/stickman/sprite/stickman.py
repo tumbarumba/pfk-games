@@ -2,47 +2,12 @@ from __future__ import annotations
 import time
 import tkinter as tk
 
-from pfk_games.stickman.hitbox import HitBox, Point
+from pfk_games.stickman.sprite.hitbox import HitBox, Point
 from pfk_games.stickman.images import image_path
+from pfk_games.stickman.sprite import Sprite
+from pfk_games.stickman.sprite.platform import PlatformSprite
 
 TERMINAL_VELOCITY: int = 6
-
-
-class Sprite:
-    def __init__(self, canvas: tk.Canvas, hitbox: HitBox = HitBox()) -> None:
-        self._canvas = canvas
-        self._canvas_width: int = canvas.winfo_width()
-        self._canvas_height: int = canvas.winfo_height()
-        self._hitbox = hitbox
-
-    def tick(self) -> None:
-        pass
-
-    def handle_collision(self) -> None:
-        pass
-
-    @property
-    def hitbox(self) -> HitBox:
-        return self._hitbox
-
-
-class PlatformSprite(Sprite):
-    @classmethod
-    def _make_hitbox(cls, image: tk.PhotoImage, x: int, y: int, width: int, height: int) -> HitBox:
-        if width == 0:
-            width = image.width()
-        if height == 0:
-            height = image.height()
-        return HitBox(Point(x, y), Point(x + width, y + height))
-
-    def __init__(self,
-                 canvas: tk.Canvas,
-                 source_image: tk.PhotoImage,
-                 x: int, y: int,
-                 width: int = 0, height: int = 0) -> None:
-        super().__init__(canvas, PlatformSprite._make_hitbox(source_image, x, y, width, height))
-        self._source_image = source_image
-        self._canvas_image = canvas.create_image(x, y, image=source_image, anchor="nw")
 
 
 class ImageSequence:
@@ -77,7 +42,7 @@ class ImageSequence:
     def jumping(self) -> tk.PhotoImage:
         return self._jump
 
-class StickFigureSprite(Sprite):
+class StickManSprite(Sprite):
     @classmethod
     def _make_hitbox(cls) -> HitBox:
         top_left = Point(200, 470)
@@ -85,7 +50,7 @@ class StickFigureSprite(Sprite):
         return HitBox(top_left, bottom_right)
 
     def __init__(self, canvas: tk.Canvas, sprites: list[Sprite]) -> None:
-        super().__init__(canvas, StickFigureSprite._make_hitbox())
+        super().__init__(canvas, StickManSprite._make_hitbox())
         self._sprites = sprites
         self._left_seq = ImageSequence.facing_left()
         self._right_seq = ImageSequence.facing_right()
@@ -248,25 +213,3 @@ class StickFigureSprite(Sprite):
             sprite.handle_collision()
 
 
-class DoorSprite(Sprite):
-    @classmethod
-    def _make_hitbox(cls, x: int, y: int, width: int, height: int) -> HitBox:
-        return HitBox(Point(x, y), Point(x + int(width / 2), y + int(height / 2)))
-
-    def __init__(self, canvas: tk.Canvas, x: int, y: int, width: int, height: int):
-        super().__init__(canvas, DoorSprite._make_hitbox(x, y, width, height))
-        self._closed_door = tk.PhotoImage(file=image_path("door1.png"))
-        self._open_door = tk.PhotoImage(file=image_path("door2.png"))
-        self._canvas_image = canvas.create_image(x, y, image=self._closed_door, anchor="nw")
-        self._is_open = False
-
-    def tick(self) -> None:
-        pass
-
-    def handle_collision(self):
-        self._is_open = True
-        self._canvas.itemconfig(self._canvas_image, image=self._open_door)
-
-    @property
-    def is_open(self) -> bool:
-        return self._is_open

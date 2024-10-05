@@ -1,8 +1,8 @@
-from pfk_games.stickman.stickman import StickMan
+from pfk_games.stickman.stickman import StickManGame
 
 
 def main() -> None:
-    game = StickMan()
+    game = StickManGame()
     game.mainloop()
 
 
