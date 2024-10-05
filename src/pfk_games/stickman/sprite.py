@@ -47,46 +47,35 @@ class PlatformSprite(Sprite):
 
 class ImageSequence:
     @classmethod
-    def make_sequence(cls) -> ImageSequence:
+    def facing_left(cls) -> ImageSequence:
         l1 = tk.PhotoImage(file=image_path("figure-l1.png")),
         l2 = tk.PhotoImage(file=image_path("figure-l2.png")),
         l3 = tk.PhotoImage(file=image_path("figure-l3.png"))
         left_seq = [l1, l2, l3, l2]
+        return ImageSequence(left_seq, l3)
 
+    @classmethod
+    def facing_right(cls) -> ImageSequence:
         r1 = tk.PhotoImage(file=image_path("figure-r1.png")),
         r2 = tk.PhotoImage(file=image_path("figure-r2.png")),
         r3 = tk.PhotoImage(file=image_path("figure-r3.png"))
         right_seq = [r1, r2, r3, r2]
+        return ImageSequence(right_seq, r3)
 
-        return ImageSequence(left_seq, l3, right_seq, r3)
-
-    def __init__(self,
-                 left_seq: list[tk.PhotoImage], left_jump: tk.PhotoImage,
-                 right_seq: list[tk.PhotoImage], right_jump: tk.PhotoImage) -> None:
-        self._left_seq = left_seq
-        self._left_jump = left_jump
-        self._right_seq = right_seq
-        self._right_jump = right_jump
+    def __init__(self, images: list[tk.PhotoImage], jump: tk.PhotoImage) -> None:
+        self._images = images
+        self._jump = jump
         self._index = 0
 
-    def first(self, is_left: bool) -> tk.PhotoImage:
-        if is_left:
-            return self._left_seq[0]
-        else:
-            return self._right_seq[0]
+    def first(self) -> tk.PhotoImage:
+        return self._images[0]
 
-    def next(self, is_left: bool) -> tk.PhotoImage:
-        self._index = (self._index + 1) % len(self._left_seq)
-        if is_left:
-            return self._left_seq[self._index]
-        else:
-            return self._right_seq[self._index]
+    def next(self) -> tk.PhotoImage:
+        self._index = (self._index + 1) % len(self._images)
+        return self._images[self._index]
 
-    def jumping(self, is_left: bool) -> tk.PhotoImage:
-        if is_left:
-            return self._left_jump
-        else:
-            return self._right_jump
+    def jumping(self) -> tk.PhotoImage:
+        return self._jump
 
 class StickFigureSprite(Sprite):
     @classmethod
@@ -98,8 +87,10 @@ class StickFigureSprite(Sprite):
     def __init__(self, canvas: tk.Canvas, sprites: list[Sprite]) -> None:
         super().__init__(canvas, StickFigureSprite._make_hitbox())
         self._sprites = sprites
-        self._image_seq = ImageSequence.make_sequence()
-        self._current_image = self._image_seq.first(True)
+        self._left_seq = ImageSequence.facing_left()
+        self._right_seq = ImageSequence.facing_right()
+        self._image_seq = self._left_seq
+        self._current_image = self._image_seq.first()
         self._canvas_image = canvas.create_image(
             self.hitbox.top_left.x,
             self.hitbox.top_left.y,
@@ -114,17 +105,19 @@ class StickFigureSprite(Sprite):
     def turn_left(self) -> None:
         if not self._jumping:
             self._dx = -2
+            self._image_seq = self._left_seq
 
     def turn_right(self) -> None:
         if not self._jumping:
             self._dx = 2
+            self._image_seq = self._right_seq
 
     def jump(self) -> None:
         if not self._jumping:
             self._jumping = True
             self._gravity_time = time.time()
             self._dy = -5
-            self._current_image = self._image_seq.jumping(self._moving_left())
+            self._current_image = self._image_seq.jumping()
 
     def tick(self) -> None:
         self._animate()
@@ -140,7 +133,7 @@ class StickFigureSprite(Sprite):
             now = time.time()
             if now - self._animation_time > 0.1:
                 self._animation_time = now
-                self._current_image = self._image_seq.next(self._moving_left())
+                self._current_image = self._image_seq.next()
 
     def _update_coordinates(self):
         if self._jumping:
@@ -170,7 +163,7 @@ class StickFigureSprite(Sprite):
         return self._dy > 0
 
     def _stop_horizontal(self) -> None:
-        self._current_image = self._image_seq.first(self._moving_left())
+        self._current_image = self._image_seq.first()
         self._dx = 0
 
     def _stop_vertical(self) -> None:
