@@ -6,11 +6,9 @@ from pfk_games.stickman.sprite import Sprite, DoorSprite, StickFigureSprite, Pla
 
 
 class Level(ABC):
-    def __init__(self, canvas: tk.Canvas) -> None:
+    def __init__(self, canvas: tk.Canvas, bg_path: str) -> None:
         self._canvas = canvas
-
-        self._set_background()
-
+        self._bg_image = self._set_background(bg_path)
         self._sprites = self._make_sprites()
         self._stick_man = StickFigureSprite(self._canvas, self._sprites)
         self._door = self._make_door()
@@ -32,13 +30,18 @@ class Level(ABC):
         if self._door.is_open:
             self._complete = True
 
+    def _set_background(self, bg_path: str) -> tk.PhotoImage:
+        bg_image = tk.PhotoImage(file=bg_path)
+        w = bg_image.width()
+        h = bg_image.height()
+        for x in range(0, 5):
+            for y in range(0, 5):
+                self._canvas.create_image(x * w, y * h, image=bg_image, anchor="nw")
+        return bg_image
+
     @property
     def complete(self) -> bool:
         return self._complete
-
-    @abstractmethod
-    def _set_background(self) -> None:
-        pass
 
     @abstractmethod
     def _make_door(self) -> DoorSprite:
@@ -50,15 +53,7 @@ class Level(ABC):
 
 class Level1(Level):
     def __init__(self, canvas: tk.Canvas) -> None:
-        super().__init__(canvas)
-
-    def _set_background(self) -> None:
-        self._bg_image = tk.PhotoImage(file=image_path("background1.png"))
-        w = self._bg_image.width()
-        h = self._bg_image.height()
-        for x in range(0, 5):
-            for y in range(0, 5):
-                self._canvas.create_image(x * w, y * h, image=self._bg_image, anchor="nw")
+        super().__init__(canvas, image_path("background1.png"))
 
     def _make_door(self) -> DoorSprite:
         return DoorSprite(self._canvas, 45, 30, 40, 35)
@@ -87,15 +82,7 @@ class Level1(Level):
 
 class Level2(Level):
     def __init__(self, canvas: tk.Canvas) -> None:
-        super().__init__(canvas)
-
-    def _set_background(self) -> None:
-        self._bg_image = tk.PhotoImage(file=image_path("background2.png"))
-        w = self._bg_image.width()
-        h = self._bg_image.height()
-        for x in range(0, 5):
-            for y in range(0, 5):
-                self._canvas.create_image(x * w, y * h, image=self._bg_image, anchor="nw")
+        super().__init__(canvas, image_path("background2.png"))
 
     def _make_door(self) -> DoorSprite:
         return DoorSprite(self._canvas, 45, 30, 40, 35)
