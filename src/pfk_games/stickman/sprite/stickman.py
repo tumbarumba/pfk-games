@@ -61,8 +61,6 @@ class StickManSprite(Sprite):
             self.hitbox.top_left.y,
             image=self._current_image,
             anchor="nw")
-        self._dx = 0
-        self._dy = 0
         self._jumping = False
         self._animation_time = time.time()
         self._gravity_time = time.time()
@@ -114,18 +112,6 @@ class StickManSprite(Sprite):
         if now - self._gravity_time > 0.05:
             self._dy = min(TERMINAL_VELOCITY, self._dy + 1)
             self._gravity_time = now
-
-    def _moving_left(self) -> bool:
-        return self._dx < 0
-
-    def _moving_right(self) -> bool:
-        return self._dx > 0
-
-    def _moving_up(self) -> bool:
-        return self._dy < 0
-
-    def _moving_down(self) -> bool:
-        return self._dy > 0
 
     def _stop_horizontal(self) -> None:
         self._current_image = self._image_seq.first()

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pfk_games.stickman.images import image_path
 from pfk_games.stickman.sprite import Sprite
 from pfk_games.stickman.sprite.door import DoorSprite
-from pfk_games.stickman.sprite.platform import PlatformSprite
+from pfk_games.stickman.sprite.platform import PlatformSprite, MovingPlatformSprite
 from pfk_games.stickman.sprite.stickman import StickManSprite
 
 
@@ -12,7 +12,7 @@ class Level(ABC):
     def __init__(self, canvas: tk.Canvas, bg_path: str) -> None:
         self._canvas = canvas
         self._bg_image = self._set_background(bg_path)
-        self._sprites = self._make_sprites()
+        self._sprites = self._make_platforms()
         self._stick_man = StickManSprite(self._canvas, self._sprites)
         self._door = self._make_door()
         self._sprites.extend([self._door, self._stick_man])
@@ -51,7 +51,7 @@ class Level(ABC):
         pass
 
     @abstractmethod
-    def _make_sprites(self) -> list[Sprite]:
+    def _make_platforms(self) -> list[Sprite]:
         pass
 
 class Level1(Level):
@@ -61,26 +61,23 @@ class Level1(Level):
     def _make_door(self) -> DoorSprite:
         return DoorSprite(self._canvas, 45, 30, 40, 35)
 
-    def _make_sprites(self) -> list[Sprite]:
-        sprites: list[Sprite] = []
+    def _make_platforms(self) -> list[Sprite]:
+        long_platform = tk.PhotoImage(file=image_path("platform1.png"))
+        medium_platform = tk.PhotoImage(file=image_path("platform2.png"))
+        short_platform = tk.PhotoImage(file=image_path("platform3.png"))
 
-        p1 = tk.PhotoImage(file=image_path("platform1.png"))
-        sprites.append(PlatformSprite(self._canvas, p1, 0, 480))
-        sprites.append(PlatformSprite(self._canvas, p1, 150, 440))
-        sprites.append(PlatformSprite(self._canvas, p1, 300, 400))
-        sprites.append(PlatformSprite(self._canvas, p1, 300, 160))
-
-        p2 = tk.PhotoImage(file=image_path("platform2.png"))
-        sprites.append(PlatformSprite(self._canvas, p2, 175, 350))
-        sprites.append(PlatformSprite(self._canvas, p2, 50, 300))
-        sprites.append(PlatformSprite(self._canvas, p2, 170, 120))
-        sprites.append(PlatformSprite(self._canvas, p2, 45, 60))
-
-        p3 = tk.PhotoImage(file=image_path("platform3.png"))
-        sprites.append(PlatformSprite(self._canvas, p3, 170, 250))
-        sprites.append(PlatformSprite(self._canvas, p3, 230, 200))
-
-        return sprites
+        return [
+            PlatformSprite(self._canvas, medium_platform, 45, 60),
+            PlatformSprite(self._canvas, medium_platform, 170, 120),
+            PlatformSprite(self._canvas, long_platform, 300, 160),
+            PlatformSprite(self._canvas, short_platform, 230, 200),
+            PlatformSprite(self._canvas, short_platform, 170, 250),
+            PlatformSprite(self._canvas, medium_platform, 50, 300),
+            PlatformSprite(self._canvas, medium_platform, 175, 350),
+            PlatformSprite(self._canvas, long_platform, 300, 400),
+            PlatformSprite(self._canvas, long_platform, 150, 440),
+            PlatformSprite(self._canvas, long_platform, 0, 480),
+        ]
 
 
 class Level2(Level):
@@ -90,23 +87,20 @@ class Level2(Level):
     def _make_door(self) -> DoorSprite:
         return DoorSprite(self._canvas, 45, 30, 40, 35)
 
-    def _make_sprites(self) -> list[Sprite]:
-        sprites: list[Sprite] = []
+    def _make_platforms(self) -> list[Sprite]:
+        long_platform = tk.PhotoImage(file=image_path("platform1.png"))
+        medium_platform = tk.PhotoImage(file=image_path("platform2.png"))
+        short_platform = tk.PhotoImage(file=image_path("platform3.png"))
 
-        p1 = tk.PhotoImage(file=image_path("platform1.png"))
-        sprites.append(PlatformSprite(self._canvas, p1, 0, 480))
-        sprites.append(PlatformSprite(self._canvas, p1, 150, 440))
-        sprites.append(PlatformSprite(self._canvas, p1, 300, 400))
-        sprites.append(PlatformSprite(self._canvas, p1, 300, 160))
-
-        p2 = tk.PhotoImage(file=image_path("platform2.png"))
-        sprites.append(PlatformSprite(self._canvas, p2, 175, 350))
-        sprites.append(PlatformSprite(self._canvas, p2, 50, 300))
-        sprites.append(PlatformSprite(self._canvas, p2, 170, 120))
-        sprites.append(PlatformSprite(self._canvas, p2, 45, 60))
-
-        p3 = tk.PhotoImage(file=image_path("platform3.png"))
-        sprites.append(PlatformSprite(self._canvas, p3, 170, 250))
-        sprites.append(PlatformSprite(self._canvas, p3, 230, 200))
-
-        return sprites
+        return [
+            PlatformSprite(self._canvas, medium_platform, 45, 60),
+            MovingPlatformSprite(self._canvas, long_platform, 0, 110),
+            PlatformSprite(self._canvas, medium_platform, 170, 170),
+            PlatformSprite(self._canvas, long_platform, 300, 210),
+            PlatformSprite(self._canvas, short_platform, 230, 250),
+            PlatformSprite(self._canvas, short_platform, 170, 300),
+            PlatformSprite(self._canvas, medium_platform, 50, 340),
+            PlatformSprite(self._canvas, medium_platform, 175, 380),
+            PlatformSprite(self._canvas, long_platform, 300, 420),
+            MovingPlatformSprite(self._canvas, long_platform, 0, 460)
+        ]
