@@ -16,9 +16,11 @@ class Level(ABC):
         self._stick_man = StickManSprite(self._canvas, self._sprites)
         self._door = self._make_door()
         self._sprites.extend([self._door, self._stick_man])
+        self._started = False
         self._complete = False
 
     def start(self) -> None:
+        self._started = True
         for sprite in self._sprites:
             sprite.start()
 
@@ -32,10 +34,11 @@ class Level(ABC):
         self._stick_man.jump()
 
     def tick(self):
-        for sprite in self._sprites:
-            sprite.tick()
-        if self._door.is_open:
-            self._complete = True
+        if self._started and not self._complete:
+            for sprite in self._sprites:
+                sprite.tick()
+            if self._door.is_open:
+                self._complete = True
 
     def _set_background(self, bg_path: str) -> tk.PhotoImage:
         bg_image = tk.PhotoImage(file=bg_path)
@@ -45,6 +48,10 @@ class Level(ABC):
             for y in range(0, 5):
                 self._canvas.create_image(x * w, y * h, image=bg_image, anchor="nw")
         return bg_image
+
+    @property
+    def started(self) -> bool:
+        return self._started
 
     @property
     def complete(self) -> bool:

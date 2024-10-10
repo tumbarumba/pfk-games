@@ -26,7 +26,7 @@ class StickManGame:
         self._root.update()
         self._canvas_height = 500
         self._canvas_width = 500
-        self._running = True
+        self._game_over = False
 
         self._level_index = -1
         self._level: Level
@@ -51,13 +51,18 @@ class StickManGame:
             self._level.on_right()
 
     def on_space(self, _):
-        if not self._running:
+        if self._game_over:
+            self.hide_message()
+            self._game_over = False
+            self._level_index = -1
+            self._start_next_level()
+        elif self._level.complete:
             self.hide_message()
             if self._has_next_level():
                 self._start_next_level()
             else:
                 self._end_game()
-        elif self._message:
+        elif not self._level.started:
             self.hide_message()
             self._level.start()
         else:
@@ -76,10 +81,9 @@ class StickManGame:
         self._message = None
 
     def tick(self) -> None:
-        if self._running:
+        if not self._game_over:
             self._level.tick()
             if self._level.complete:
-                self._running = False
                 self.show_message(f"Level {self._level_index + 1} complete\n\nPress <space> for next level")
         self._root.update_idletasks()
         self._root.update()
@@ -100,8 +104,8 @@ class StickManGame:
     def _start_next_level(self):
         self._level_index += 1
         self._level = level_builders[self._level_index](self._canvas)
-        self._running = True
         self.show_message(f"Level {self._level_index + 1}\n\nPress <space> to start")
 
     def _end_game(self):
-        self.show_message("Game Over")
+        self._game_over = True
+        self.show_message("Game Over\n\nPress <space> to start again")
