@@ -59,7 +59,7 @@ class StickManGame:
                 self._end_game()
         elif self._message:
             self.hide_message()
-            self._level.on_left()
+            self._level.start()
         else:
             self._level.on_space()
 

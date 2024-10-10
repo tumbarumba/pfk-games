@@ -32,6 +32,8 @@ class MovingPlatformSprite(PlatformSprite):
                  x: int, y: int,
                  width: int = 0, height: int = 0) -> None:
         super().__init__(canvas, source_image, x, y, width, height)
+
+    def start(self) -> None:
         self._dx = 1
 
     def tick(self) -> None:

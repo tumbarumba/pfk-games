@@ -15,6 +15,9 @@ class Sprite:
     def tick(self) -> None:
         pass
 
+    def start(self) -> None:
+        pass
+
     def handle_collision(self) -> None:
         pass
 

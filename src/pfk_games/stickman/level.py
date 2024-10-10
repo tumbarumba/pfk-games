@@ -18,6 +18,10 @@ class Level(ABC):
         self._sprites.extend([self._door, self._stick_man])
         self._complete = False
 
+    def start(self) -> None:
+        for sprite in self._sprites:
+            sprite.start()
+
     def on_left(self):
         self._stick_man.turn_left()
 

@@ -65,6 +65,9 @@ class StickManSprite(Sprite):
         self._animation_time = time.time()
         self._gravity_time = time.time()
 
+    def start(self) -> None:
+        self.turn_left()
+
     def turn_left(self) -> None:
         if not self._jumping:
             self._dx = -2

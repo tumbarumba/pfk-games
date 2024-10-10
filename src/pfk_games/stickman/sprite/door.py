@@ -19,9 +19,6 @@ class DoorSprite(Sprite):
         self._canvas_image = canvas.create_image(x, y, image=self._closed_door, anchor="nw")
         self._is_open = False
 
-    def tick(self) -> None:
-        pass
-
     def handle_collision(self):
         self._is_open = True
         self._canvas.itemconfig(self._canvas_image, image=self._open_door)
