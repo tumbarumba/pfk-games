@@ -1,4 +1,3 @@
-import math
 import time
 import tkinter as tk
 from typing import Callable
@@ -47,13 +46,14 @@ class StickManGame:
             self._level.on_right()
 
     def on_space(self, _):
-        if self._game_over:
-            self._restart_game()
-        elif self._level.complete:
-            self._try_start_next_level()
-        elif not self._level.started:
+        if self._message:
             self.hide_message()
-            self._level.start()
+            if self._game_over:
+                self._restart_game()
+            elif self._level.complete:
+                self._try_start_next_level()
+            elif not self._level.started:
+                self._level.start()
         else:
             self._level.on_space()
 
@@ -98,13 +98,11 @@ class StickManGame:
         self._canvas.bind_all("<space>", self.on_space)
 
     def _restart_game(self):
-        self.hide_message()
         self._game_over = False
         self._level_index = -1
         self._start_next_level()
 
     def _try_start_next_level(self):
-        self.hide_message()
         if self._has_next_level():
             self._start_next_level()
         else:
