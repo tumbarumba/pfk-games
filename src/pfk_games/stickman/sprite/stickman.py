@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import time
 import tkinter as tk
 
@@ -62,10 +63,17 @@ class StickManSprite(Sprite):
             image=self._current_image,
             anchor="nw")
         self._jumping = False
-        self._animation_time = time.time()
-        self._gravity_time = time.time()
+        self._start_time = 0.0
+        self._animation_time = 0.0
+        self._gravity_time = 0.0
+
+    def __repr__(self) -> str:
+        return f"StickManSprite(x={self.hitbox.left},y={self.hitbox.top},dx={self._dx},dy={self._dy},jumping={self._jumping})"
 
     def start(self) -> None:
+        self._start_time = time.time()
+        self._animation_time = self._start_time
+        self._gravity_time = self._start_time
         self.turn_left()
 
     def turn_left(self) -> None:

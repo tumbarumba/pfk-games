@@ -1,3 +1,4 @@
+import math
 import time
 import tkinter as tk
 from typing import Callable
@@ -5,7 +6,7 @@ from typing import Callable
 from pfk_games.stickman.level import Level, Level1, Level2
 from pfk_games.stickman.message import Message
 
-TICK_DURATION = 0.01
+TICK_INTERVAL = 0.01
 
 
 level_builders: list[Callable[[tk.Canvas], Level]] = [Level1, Level2]
@@ -80,7 +81,9 @@ class StickManGame:
         self._message.remove()
         self._message = None
 
-    def tick(self) -> None:
+    def tick(self) -> float:
+        tick_start = time.time()
+
         if not self._game_over:
             self._level.tick()
             if self._level.complete:
@@ -88,13 +91,16 @@ class StickManGame:
         self._root.update_idletasks()
         self._root.update()
 
+        return time.time() - tick_start
+
     def mainloop(self) -> None:
         self.show_message("Level 1\n\nPress <space> to start")
         while True:
             if self.window_closed:
                 break
-            self.tick()
-            time.sleep(TICK_DURATION)
+            processing_time = self.tick()
+            sleep_time = max(0.0, TICK_INTERVAL - processing_time)
+            time.sleep(sleep_time)
 
         self._root.destroy()
 
