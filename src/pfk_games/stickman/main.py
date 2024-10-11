@@ -2,7 +2,7 @@ from pfk_games.stickman.stickman import StickManGame
 
 
 def main() -> None:
-    game = StickManGame()
+    game = StickManGame(500, 500 )
     game.mainloop()
 
 
