@@ -38,11 +38,6 @@ class StickManGame:
 
         self._start_next_level()
 
-    def _bind_keys(self) -> None:
-        self._canvas.bind_all("<KeyPress-Left>", self.on_left)
-        self._canvas.bind_all("<KeyPress-Right>", self.on_right)
-        self._canvas.bind_all("<space>", self.on_space)
-
     def on_left(self, _):
         if not self._message:
             self._level.on_left()
@@ -53,16 +48,9 @@ class StickManGame:
 
     def on_space(self, _):
         if self._game_over:
-            self.hide_message()
-            self._game_over = False
-            self._level_index = -1
-            self._start_next_level()
+            self._restart_game()
         elif self._level.complete:
-            self.hide_message()
-            if self._has_next_level():
-                self._start_next_level()
-            else:
-                self._end_game()
+            self._try_start_next_level()
         elif not self._level.started:
             self.hide_message()
             self._level.start()
@@ -103,6 +91,24 @@ class StickManGame:
             time.sleep(sleep_time)
 
         self._root.destroy()
+
+    def _bind_keys(self) -> None:
+        self._canvas.bind_all("<KeyPress-Left>", self.on_left)
+        self._canvas.bind_all("<KeyPress-Right>", self.on_right)
+        self._canvas.bind_all("<space>", self.on_space)
+
+    def _restart_game(self):
+        self.hide_message()
+        self._game_over = False
+        self._level_index = -1
+        self._start_next_level()
+
+    def _try_start_next_level(self):
+        self.hide_message()
+        if self._has_next_level():
+            self._start_next_level()
+        else:
+            self._end_game()
 
     def _has_next_level(self) -> bool:
         return self._level_index < len(level_builders) - 1
