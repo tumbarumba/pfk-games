@@ -98,7 +98,7 @@ class StickManSprite(Sprite):
             self._dy = -5
 
     def tick(self) -> None:
-        self._jumping = not self._is_touching_bottom()
+        self._jumping = not self._is_supported()
         self._update_velocity()
         self._animate()
 
@@ -146,20 +146,31 @@ class StickManSprite(Sprite):
         self._dy = 0
 
     def _keep_on_canvas(self) -> None:
-        if self._moving_left() and self.hitbox.left <= 0:
-            self._stop_horizontal()
-        elif self._moving_right() and self.hitbox.right >= self._canvas_width:
+        if self._is_moving_off_left() or self._is_moving_off_right():
             self._stop_horizontal()
 
-        if self._moving_up() and self.hitbox.top <= 0:
+        if self._is_moving_off_top() or self._is_moving_off_bottom():
             self._stop_vertical()
-        elif self._moving_down():
-            if self.hitbox.bottom >= self._canvas_height:
-                self._stop_vertical()
-            elif self.hitbox.bottom + self._dy >= self._canvas_height:
-                self._dy = self._canvas_height - self.hitbox.bottom
 
-    def _is_touching_bottom(self) -> bool:
+        if self._is_moving_off_bottom_next_tick():
+            self._dy = self._canvas_height - self.hitbox.bottom
+
+    def _is_moving_off_left(self) -> bool:
+        return self._moving_left() and self.hitbox.left <= 0
+
+    def _is_moving_off_right(self) -> bool:
+        return self._moving_right() and self.hitbox.right >= self._canvas_width
+
+    def _is_moving_off_top(self) -> bool:
+        return self._moving_up() and self.hitbox.top <= 0
+
+    def _is_moving_off_bottom(self) -> bool:
+        return self._moving_down() and self.hitbox.bottom >= self._canvas_height
+
+    def _is_moving_off_bottom_next_tick(self) -> bool:
+        return self._moving_down() and self.hitbox.bottom + self._dy >= self._canvas_height
+
+    def _is_supported(self) -> bool:
         if self.hitbox.bottom >= self._canvas_height:
             # Bottom is at edge of canvas
             return True
@@ -167,7 +178,7 @@ class StickManSprite(Sprite):
         for sprite in self._sprites:
             if isinstance(sprite, PlatformSprite):
                 if self.hitbox.collided_bottom(sprite.hitbox, 1):
-                    # Bottom is touching this platform
+                    # Bottom is touching this platform sprite
                     return True
 
         # Not on platform or bottom
@@ -192,20 +203,16 @@ class StickManSprite(Sprite):
         if sprite == self:
             return
 
-        # Falling onto platform
+        # Check vertical collisions
         if self._bottom_will_hit(sprite):
             self._dy = max(0, sprite.hitbox.top - self.hitbox.bottom)
         elif self._bottom_has_hit(sprite):
             self._stop_vertical()
-
-        if self._top_has_hit(sprite):
+        elif self._top_has_hit(sprite):
             # Bounce
             self._dy = -self._dy
-        elif self._left_has_hit(sprite):
+
+        # Check horizontal collisions
+        if self._left_has_hit(sprite) or self._right_has_hit(sprite):
             self._stop_horizontal()
             sprite.handle_collision()
-        elif self._right_has_hit(sprite):
-            self._stop_horizontal()
-            sprite.handle_collision()
-
-
