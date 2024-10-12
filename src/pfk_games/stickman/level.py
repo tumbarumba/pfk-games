@@ -70,7 +70,7 @@ class Level1(Level):
         super().__init__(canvas, image_path("background1.png"))
 
     def _make_door(self) -> DoorSprite:
-        return DoorSprite(self._canvas, 45, 30, 40, 35)
+        return DoorSprite(self._canvas, 65, 30, 40, 35)
 
     def _make_platforms(self) -> list[Sprite]:
         long_platform = tk.PhotoImage(file=image_path("platform1.png"))
@@ -78,10 +78,10 @@ class Level1(Level):
         short_platform = tk.PhotoImage(file=image_path("platform3.png"))
 
         return [
-            PlatformSprite(self._canvas, medium_platform, 45, 60),
-            PlatformSprite(self._canvas, medium_platform, 170, 120),
-            PlatformSprite(self._canvas, long_platform, 300, 160),
-            PlatformSprite(self._canvas, short_platform, 230, 200),
+            PlatformSprite(self._canvas, medium_platform, 65, 60),
+            PlatformSprite(self._canvas, medium_platform, 190, 120),
+            PlatformSprite(self._canvas, long_platform, 320, 160),
+            PlatformSprite(self._canvas, short_platform, 250, 200),
             PlatformSprite(self._canvas, short_platform, 170, 250),
             PlatformSprite(self._canvas, medium_platform, 50, 300),
             PlatformSprite(self._canvas, medium_platform, 175, 350),

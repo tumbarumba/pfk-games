@@ -94,12 +94,12 @@ class StickManGame:
         canvas.bind_all("<space>", self.on_space)
         return canvas
 
-    def _restart_game(self):
+    def _restart_game(self) -> None:
         self._game_over = False
         self._level_index = -1
         self._start_next_level()
 
-    def _try_start_next_level(self):
+    def _try_start_next_level(self) -> None:
         if self._has_next_level():
             self._start_next_level()
         else:
@@ -108,7 +108,7 @@ class StickManGame:
     def _has_next_level(self) -> bool:
         return self._level_index < len(level_builders) - 1
 
-    def _start_next_level(self):
+    def _start_next_level(self) -> None:
         self._level_index += 1
         self._level = level_builders[self._level_index](self._canvas)
         self.show_message(f"Level {self._level_index + 1}\n\nPress <space> to start")
