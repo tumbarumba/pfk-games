@@ -8,8 +8,8 @@ from pfk_games.stickman.message import Message
 TICK_INTERVAL = 0.01
 
 
-level_builders: list[Callable[[tk.Canvas], Level]] = [Level1, Level2]
-# level_builders: list[Callable[[tk.Canvas], Level]] = [Level2]
+# level_builders: list[Callable[[tk.Canvas], Level]] = [Level1, Level2]
+level_builders: list[Callable[[tk.Canvas], Level]] = [Level2]
 
 
 class StickManGame:

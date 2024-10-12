@@ -113,9 +113,9 @@ class StickManSprite(Sprite):
         if self._jumping:
             self._acceleration_due_to_gravity()
         self._check_if_on_platform()
-        self._keep_on_canvas()
         for sprite in self._sprites:
             self._check_collision(sprite)
+        self._keep_on_canvas()
         self._hitbox = self._hitbox.move(self._dx, self._dy)
 
     def _acceleration_due_to_gravity(self) -> None:
