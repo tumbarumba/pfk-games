@@ -8,6 +8,7 @@ from pfk_games.stickman.images import image_path
 from pfk_games.stickman.sprite import Sprite
 from pfk_games.stickman.sprite.platform import PlatformSprite
 
+ANIMATION_INTERVAL: float = 0.1
 TERMINAL_VELOCITY: int = 6
 
 
@@ -97,17 +98,19 @@ class StickManSprite(Sprite):
             self._dy = -5
 
     def tick(self) -> None:
-        self._animate()
         self._update_velocity()
+        self._animate()
 
         self._hitbox = self._hitbox.move(self._dx, self._dy)
         self._canvas.moveto(self._canvas_image, self.hitbox.top_left.x, self.hitbox.top_left.y)
 
     def _animate(self) -> None:
-        self._current_image = self._get_current_image()
-        self._canvas.itemconfig(self._canvas_image, image=self._current_image)
+        next_image = self._get_next_image()
+        if next_image != self._current_image:
+            self._current_image = next_image
+            self._canvas.itemconfig(self._canvas_image, image=self._current_image)
 
-    def _get_current_image(self) -> tk.PhotoImage:
+    def _get_next_image(self) -> tk.PhotoImage:
         if self._jumping:
             return self._image_seq.jumping()
 
@@ -115,7 +118,7 @@ class StickManSprite(Sprite):
             return self._image_seq.first()
 
         now = time.time()
-        if now - self._animation_time > 0.1:
+        if now - self._animation_time > ANIMATION_INTERVAL:
             self._animation_time = now
             return self._image_seq.next()
         else:
@@ -207,7 +210,6 @@ class StickManSprite(Sprite):
         if self._bottom_will_hit(sprite):
             self._dy = max(0, sprite.hitbox.top - self.hitbox.bottom)
         elif self._bottom_has_hit(sprite):
-            self._jumping = False
             self._stop_vertical()
 
         if self._top_has_hit(sprite):
