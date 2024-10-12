@@ -105,10 +105,10 @@ class Level2(Level):
 
         return [
             PlatformSprite(self._canvas, medium_platform, 45, 60),
-            MovingPlatformSprite(self._canvas, long_platform, 0, 110),
-            PlatformSprite(self._canvas, medium_platform, 170, 170),
-            PlatformSprite(self._canvas, long_platform, 300, 210),
-            PlatformSprite(self._canvas, short_platform, 230, 250),
+            MovingPlatformSprite(self._canvas, long_platform, 400, 110),
+            PlatformSprite(self._canvas, medium_platform, 190, 170),
+            PlatformSprite(self._canvas, long_platform, 320, 210),
+            PlatformSprite(self._canvas, short_platform, 250, 250),
             PlatformSprite(self._canvas, short_platform, 170, 300),
             PlatformSprite(self._canvas, medium_platform, 50, 340),
             PlatformSprite(self._canvas, medium_platform, 175, 380),

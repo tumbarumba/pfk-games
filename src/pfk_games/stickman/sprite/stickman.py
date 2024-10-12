@@ -43,6 +43,10 @@ class ImageSequence:
     def jumping(self) -> tk.PhotoImage:
         return self._jump
 
+    def current(self) -> tk.PhotoImage:
+        return self._images[self._index]
+
+
 class StickManSprite(Sprite):
     @classmethod
     def _make_hitbox(cls) -> HitBox:
@@ -91,32 +95,39 @@ class StickManSprite(Sprite):
             self._jumping = True
             self._gravity_time = time.time()
             self._dy = -5
-            self._current_image = self._image_seq.jumping()
 
     def tick(self) -> None:
         self._animate()
-        self._update_coordinates()
+        self._update_velocity()
+
+        self._hitbox = self._hitbox.move(self._dx, self._dy)
         self._canvas.moveto(self._canvas_image, self.hitbox.top_left.x, self.hitbox.top_left.y)
 
     def _animate(self) -> None:
-        self._cycle_current_image()
+        self._current_image = self._get_current_image()
         self._canvas.itemconfig(self._canvas_image, image=self._current_image)
 
-    def _cycle_current_image(self):
-        if self._dx != 0 and not self._jumping:
-            now = time.time()
-            if now - self._animation_time > 0.1:
-                self._animation_time = now
-                self._current_image = self._image_seq.next()
+    def _get_current_image(self) -> tk.PhotoImage:
+        if self._jumping:
+            return self._image_seq.jumping()
 
-    def _update_coordinates(self):
+        if self._dx == 0:
+            return self._image_seq.first()
+
+        now = time.time()
+        if now - self._animation_time > 0.1:
+            self._animation_time = now
+            return self._image_seq.next()
+        else:
+            return self._image_seq.current()
+
+    def _update_velocity(self):
         if self._jumping:
             self._acceleration_due_to_gravity()
-        self._check_if_on_platform()
+        self._check_if_jumping()
         for sprite in self._sprites:
             self._check_collision(sprite)
         self._keep_on_canvas()
-        self._hitbox = self._hitbox.move(self._dx, self._dy)
 
     def _acceleration_due_to_gravity(self) -> None:
         now = time.time()
@@ -157,7 +168,7 @@ class StickManSprite(Sprite):
         if self._moving_right() and self.hitbox.right >= self._canvas_width:
             self._stop_horizontal()
 
-    def _check_if_on_platform(self) -> None:
+    def _check_if_jumping(self) -> None:
         if self.hitbox.bottom >= self._canvas_height:
             # Bottom of screen
             self._jumping = False
