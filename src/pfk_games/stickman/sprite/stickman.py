@@ -98,6 +98,7 @@ class StickManSprite(Sprite):
             self._dy = -5
 
     def tick(self) -> None:
+        self._jumping = not self._is_touching_bottom()
         self._update_velocity()
         self._animate()
 
@@ -127,7 +128,6 @@ class StickManSprite(Sprite):
     def _update_velocity(self):
         if self._jumping:
             self._acceleration_due_to_gravity()
-        self._check_if_jumping()
         for sprite in self._sprites:
             self._check_collision(sprite)
         self._keep_on_canvas()
@@ -146,46 +146,32 @@ class StickManSprite(Sprite):
         self._dy = 0
 
     def _keep_on_canvas(self) -> None:
-        self._check_left_limit()
-        self._check_right_limit()
-        self._check_top_limit()
-        self._check_bottom_limit()
+        if self._moving_left() and self.hitbox.left <= 0:
+            self._stop_horizontal()
+        elif self._moving_right() and self.hitbox.right >= self._canvas_width:
+            self._stop_horizontal()
 
-    def _check_bottom_limit(self) -> None:
-        if self._moving_down():
+        if self._moving_up() and self.hitbox.top <= 0:
+            self._stop_vertical()
+        elif self._moving_down():
             if self.hitbox.bottom >= self._canvas_height:
                 self._stop_vertical()
-                self._jumping = False
             elif self.hitbox.bottom + self._dy >= self._canvas_height:
                 self._dy = self._canvas_height - self.hitbox.bottom
 
-    def _check_top_limit(self) -> None:
-        if self._moving_up() and self.hitbox.top <= 0:
-            self._stop_vertical()
-
-    def _check_left_limit(self) -> None:
-        if self._moving_left() and self.hitbox.left <= 0:
-            self._stop_horizontal()
-
-    def _check_right_limit(self) -> None:
-        if self._moving_right() and self.hitbox.right >= self._canvas_width:
-            self._stop_horizontal()
-
-    def _check_if_jumping(self) -> None:
+    def _is_touching_bottom(self) -> bool:
         if self.hitbox.bottom >= self._canvas_height:
-            # Bottom of screen
-            self._jumping = False
-            return
+            # Bottom is at edge of canvas
+            return True
 
         for sprite in self._sprites:
             if isinstance(sprite, PlatformSprite):
                 if self.hitbox.collided_bottom(sprite.hitbox, 1):
-                    # We're on this platform
-                    self._jumping = False
-                    return
+                    # Bottom is touching this platform
+                    return True
 
-        # No longer on platform, start falling
-        self._jumping = True
+        # Not on platform or bottom
+        return False
 
     def _right_has_hit(self, sprite: Sprite) -> bool:
         return self._moving_right() and self.hitbox.collided_right(sprite.hitbox)
